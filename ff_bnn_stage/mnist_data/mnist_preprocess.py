@@ -7,6 +7,7 @@
 # 5) Valida tamaño uniforme
 # 6) Divide en entrenamiento y validación
 # 7) Permite seleccionar cantidad de muestras por dígito
+# 8) Permite visualizar los conjuntos generados de MNIST
 #
 # Nota: todo se mantiene en memoria y en numpy, sin floats en FPGA.
 # ================================ LIBRERÍAS ================================ #
@@ -261,27 +262,6 @@ def print_samples_by_digit(x: np.ndarray,
                 print("    " + line)
 
 
-def print_train_valid_samples(xy_train: tuple[np.ndarray, np.ndarray],
-                              xy_valid: tuple[np.ndarray, np.ndarray],
-                              per_digit: int = 2,
-                              digits: Optional[Iterable[int]] = None,
-                              rows: int = 14,
-                              cols: int = 14,
-                              charset: Optional[str] = None,
-                              as_ascii: bool = True) -> None:
-    """
-    Imprime muestras de train y valid como ASCII o números.
-    """
-    x_tr, y_tr = xy_train
-    x_va, y_va = xy_valid
-    print_samples_by_digit(x_tr, y_tr, per_digit, digits, rows, cols,
-                           split_name="train", charset=charset,
-                           as_ascii=as_ascii)
-    print_samples_by_digit(x_va, y_va, per_digit, digits, rows, cols,
-                           split_name="valid", charset=charset,
-                           as_ascii=as_ascii)
-
-
 # ========================= Clase: mnist_preprocess ========================= #
 def mnist_preprocess(rows: int = 28,
                      cols: int = 28,
@@ -311,23 +291,3 @@ def mnist_preprocess(rows: int = 28,
         x = x.astype(np.float32)  # float32 en [0,1]
 
     return train_valid_split(x, y, frac_train=frac_train, seed=seed)
-
-
-# =================================== MAIN ================================== #
-if __name__ == "__main__":
-    # Ejemplo: 100 por dígito, 14x14, binarizado {-1,+1}
-    (x_tr, y_tr), (x_va, y_va) = mnist_preprocess(
-        rows=20, cols=20, n_per_digit=100, binarize=True, frac_train=0.8,
-        seed=42
-    )
-
-    # Ver solo las primeras 2 muestras de cada dígito (0..9)
-    # ASCII art de 2 muestras por dígito (0..9) en train y valid
-    print_train_valid_samples((x_tr, y_tr), (x_va, y_va),
-                              per_digit=2, rows=20, cols=20,
-                              as_ascii=True)
-    """
-    print_train_valid_samples((x_tr, y_tr), (x_va, y_va),
-                              per_digit=2, rows=20, cols=20,
-                              as_ascii=False)
-    """
