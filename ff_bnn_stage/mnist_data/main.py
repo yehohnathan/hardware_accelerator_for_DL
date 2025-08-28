@@ -1,9 +1,38 @@
 # ================================ LIBRERÍAS ================================ #
 import mnist_preprocess as mp
 import ff_supervision as sp
-import numpy as np
+import ff_packaging as pc
+import json
+# import numpy as np
 
 # =================================== MAIN ================================== #
+if __name__ == "__main__":
+    # Uso de referencia (descomenta si quieres probar en tu entorno):
+    # 1) Prepara datos
+    (x_tr, y_tr), (x_va, y_va) = mp.mnist_preprocess(
+        rows=28, cols=28, n_per_digit=80, binarize=True, frac_train=0.8,
+        seed=42)
+
+    # 2) Pares FF
+    x_pos, y_pos, x_neg, y_neg, t_pos, t_neg = sp.make_ff_pairs(
+        x_tr, y_tr, neg_per_pos=1, n_classes=10, where="prefix", seed=5,
+        shuffle_neg=True)
+
+    # 3) Empaquetar Ruta A
+    meta = pc.export_routeA_binary(x_pos=x_pos,
+                                   x_neg=x_neg,
+                                   out_dir="build/pack_routeA",
+                                   batch_size=64,
+                                   word_bits=32,
+                                   drop_last=False,
+                                   rows=28,
+                                   cols=28,
+                                   where_tokens="prefix",)
+
+    print("META:", json.dumps(meta, indent=2, ensure_ascii=False))
+
+
+"""
 # Supón que ya hiciste el preprocesamiento:
 (x_tr, y_tr), (x_va, y_va) = mp.mnist_preprocess(
     rows=28, cols=28, n_per_digit=80, binarize=True,
@@ -59,3 +88,4 @@ sp.print_ff_samples_by_digit(
     where="prefix",    # asegúrate de usar lo mismo que en make_ff_pairs
     as_ascii=True
 )
+"""
