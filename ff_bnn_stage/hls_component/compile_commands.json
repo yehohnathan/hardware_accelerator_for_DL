@@ -6,6 +6,7 @@
       "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
       "-fhls",
       "-hls-syn-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\common\\technology\\autopilot",
+      "-fhlstoplevel=train_tb",
       "-c",
       "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.cpp"
     ],
