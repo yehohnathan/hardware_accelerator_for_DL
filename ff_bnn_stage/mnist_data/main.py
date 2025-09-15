@@ -10,7 +10,7 @@ if __name__ == "__main__":
     # Uso de referencia (descomenta si quieres probar en tu entorno):
     # 1) Prepara datos
     (x_tr, y_tr), (x_va, y_va) = mp.mnist_preprocess(
-        rows=28, cols=28, n_per_digit=80, binarize=True, frac_train=0.8,
+        rows=20, cols=20, n_per_digit=80, binarize=True, frac_train=0.8,
         seed=42)
 
     # 2) Pares FF
@@ -25,8 +25,8 @@ if __name__ == "__main__":
                                    batch_size=64,
                                    word_bits=32,
                                    drop_last=False,
-                                   rows=28,
-                                   cols=28,
+                                   rows=20,
+                                   cols=20,
                                    where_tokens="prefix",)
 
     print("META:", json.dumps(meta, indent=2, ensure_ascii=False))
