@@ -1,0 +1,26 @@
+[
+  {
+    "directory": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component",
+    "arguments": [
+      "C:\\Xilinx\\Vitis\\2024.2\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls",
+      "-hls-syn-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\common\\technology\\autopilot",
+      "-c",
+      "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.cpp"
+    ],
+    "file": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.cpp"
+  },
+  {
+    "directory": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component",
+    "arguments": [
+      "C:\\Xilinx\\Vitis\\2024.2\\vcxx\\libexec\\clang++.exe",
+      "--sysroot=C:\\Xilinx\\Vitis\\2024.2\\tps\\mingw\\10.0.0\\win64.o\\nt",
+      "-fhls-tb",
+      "-hls-sim-headers-dir=C:\\Xilinx\\Vitis\\2024.2\\include",
+      "-c",
+      "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\train_tb.cpp"
+    ],
+    "file": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\train_tb.cpp"
+  }
+]
