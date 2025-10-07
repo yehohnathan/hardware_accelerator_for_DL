@@ -1,38 +1,48 @@
-// forward_fw.hpp
-#ifndef FORWARD_FW_HPP
-#define FORWARD_FW_HPP
-
+#pragma once
 #include <cstdint>
+#include <string>
+#include <vector>
 
-// Metadatos básicos (rellenos por el testbench leyendo meta.json).
-struct Meta {
-    // Dimensión total del vector (imagen + tokens one-hot).
-    uint32_t input_dim = 0;   // p.ej., 784+10 = 794
+#ifdef __SYNTHESIS__
+  #include "ap_int.h"
+  using u32 = ap_uint<32>;
+#else
+  using u32 = uint32_t;
+#endif
 
-    // Nº de clases (dimensión del token one-hot).
-    uint32_t token_dim = 10;  // p.ej., 10
+struct MetaFF {
+  std::string format, dtype;
+  int input_dim = 0, batch_size = 1;
+  bool drop_last = false;
+  int n_pos = 0, n_neg = 0, n_batches_pos = 0, n_batches_neg = 0;
 
-    // Tamaño de imagen (para debug/ASCII en TB si quisieras).
-    uint32_t rows = 0, cols = 0;
+  std::string f_inputs_pos, f_inputs_neg, f_labels_pos, f_labels_neg;
 
-    // "prefix" o "suffix" (posición de los tokens).
-    char where_tokens[8] = "suffix";
+  int word_bits = 32, bytes_per_row = 0, features_padded = 0;
+  std::string bitorder_in_byte = "lsb0", endianness = "little";
+  bool row_major = true;
 
-    // Configuración de empaquetado.
-    char dtype[16] = "bitpacked"; // "bitpacked" o "float32"
-    uint32_t word_bits = 0;       // 32/64 si bitpacked
-    uint32_t bytes_per_row = 0;   // stride por muestra en binario
+  int rows = -1, cols = -1, token_dim = 10;
+  std::string where_tokens = "prefix";
 
-    // Conteos
-    uint32_t n_pos = 0, n_neg = 0;
-    uint32_t batch_size = 0;
+  int words_per_row() const { return (word_bits/8) ? (bytes_per_row / (word_bits/8)) : 0; }
+  int total_pos()     const { return n_pos; }
+  int total_neg()     const { return n_neg; }
 };
 
-// Ejemplo de top sintetizable (placeholder): suma los bytes de cada fila.
-void forward_fw_top(const uint8_t* inputs,
-                    const uint8_t* labels,
-                    uint8_t* outputs,
-                    uint32_t feat_dim,
-                    uint32_t batch);
+// Carga de meta y datos
+bool load_meta(const std::string& dir, MetaFF& out);
+bool load_inputs_raw(const std::string& path, size_t n, size_t bytes_per_row, std::vector<uint8_t>& raw);
+bool load_labels_u8(const std::string& path, size_t n, std::vector<uint8_t>& y);
 
-#endif // FORWARD_FW_HPP
+// Conversión a palabras LE32 (cómodo para AXI/BRAM)
+void raw_to_words_le32(const std::vector<uint8_t>& raw, std::vector<u32>& words);
+
+// Desempaquetado {0,1} LSB0
+void unpack_dataset_bits_lsb0(const std::vector<uint8_t>& raw, int n, int d, int bytes_per_row, std::vector<uint8_t>& x01);
+
+// Mapeo {0,1}->{-1,+1}
+void map01_to_pm1(const std::vector<uint8_t>& x01, std::vector<int8_t>& xpm1);
+
+// util
+std::string join_path(const std::string& dir, const std::string& file);
