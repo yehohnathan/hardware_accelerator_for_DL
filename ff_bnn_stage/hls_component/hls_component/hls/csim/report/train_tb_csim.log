@@ -1,8 +1,15 @@
 INFO: [SIM 2] *************** CSIM start ***************
 INFO: [SIM 4] CSIM will launch CLANG as the compiler.
-make: 'csim.exe' is up to date.
+   Compiling ../../../../train_tb.cpp in debug mode
+   Generating csim.exe
 dtype=bitpacked D=410 B=64 n_pos=640 n_neg=640 bytes_per_row=52 word_bits=32
 words_per_row=13 POS_words_total=8320 NEG_words_total=8320
 POS[0] bits (primeros 32): 01000000000000000000000000000000
+[CHK] raw_pos.size()=33280 (exp=33280)
+[CHK] raw_neg.size()=33280 (exp=33280)
+[CHK] pos_words.size()=8320 (exp=8320)
+[CHK] neg_words.size()=8320 (exp=8320)
+[CHK] labels_pos=640 (exp=640)
+[CHK] labels_neg=640 (exp=640)
 INFO: [SIM 1] CSim done with 0 errors.
 INFO: [SIM 3] *************** CSIM finish ***************
