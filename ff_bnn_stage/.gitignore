@@ -5,6 +5,7 @@
 # Ignore object files and dependent files
 .o
 .d
+*.npy
 
 #Ignore logs folder and log files
 /logs
