@@ -130,4 +130,3 @@ if __name__ == "__main__":
         "data\\processed\\mnist_ff_input_packed.bin",
         packed_words=FF_PACK_WORDS, total_bits=FF_INPUT_BITS)
     """
-    
