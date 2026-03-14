@@ -1,16 +1,21 @@
-# 2026-03-13T14:02:49.827915900
+# 2026-03-14T13:39:49.397150100
 import vitis
 
 client = vitis.create_client()
 client.set_workspace(path="ff_bnn_stage")
 
-# 2026-03-13T14:02:49.827915900
-import vitis
+comp = client.get_component(name="hls_component")
+comp.run(operation="C_SIMULATION")
 
-client = vitis.create_client()
-client.set_workspace(path="ff_bnn_stage")
+comp.run(operation="C_SIMULATION")
 
-vitis.dispose()
+comp.run(operation="C_SIMULATION")
 
-vitis.dispose()
+comp.run(operation="C_SIMULATION")
+
+comp.run(operation="C_SIMULATION")
+
+comp.run(operation="C_SIMULATION")
+
+comp.run(operation="C_SIMULATION")
 
