@@ -190,7 +190,7 @@ int main() {
     }
 
     print_separator("NUEVOS SAMPLES PARA TEST");
-    print_samples_range(input_words, 5, 10);
+    print_samples_range(input_words, 10000, 3);
     // Se abre la sección de verificación de samples.
 
     print_separator("FIN DEL TESTBENCH");
