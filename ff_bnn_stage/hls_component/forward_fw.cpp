@@ -1,350 +1,326 @@
-// ============================================================================
-// forward_fw.cpp
-// ----------------------------------------------------------------------------
-// Implementación del kernel principal y de todas las funciones auxiliares.
-// Todo se mantiene explícito y legible para facilitar depuración.
-// ============================================================================
+#include "forward_fw.hpp"   // Se incluye el header principal con tipos, constantes y prototipos.
 
-#include "forward_fw.hpp"
+// ============================================================
+// LFSR de 16 bits
+// ============================================================
 
-// ============================================================================
-// Convierte 25 palabras de 32 bits en una muestra lógica de 800 bits.
-// ----------------------------------------------------------------------------
-// Convención asumida:
-// - la palabra 0 ocupa los bits [31:0]
-// - la palabra 1 ocupa los bits [63:32]
-// - ...
-// - la palabra 24 ocupa los bits [799:768]
-//
-// Si al depurar notas que el orden real del archivo binario está invertido,
-// solo debes modificar esta función y la función sample_to_words().
-// ============================================================================
-sample_t words_to_sample(const word_t in_words[WORDS_PER_SAMPLE]) {
-    // Variable donde se almacenará la muestra completa de 800 bits.
-    sample_t sample = 0;
+lfsr_t lfsr16_next(lfsr_t state) {
+#pragma HLS INLINE
+    // Se marca la función como INLINE para que HLS la integre dentro del datapath y no cree lógica separada.
 
-    // Recorre las 25 palabras de 32 bits.
-    for (int i = 0; i < WORDS_PER_SAMPLE; i++) {
-        // Permite que el compilador expanda completamente este bucle.
-#pragma HLS UNROLL
+    bool new_bit = state[0] ^ state[2] ^ state[3] ^ state[5];
+    // Se calcula el nuevo bit realimentado usando taps sencillos del LFSR.
 
-        // Calcula el bit menos significativo del segmento actual.
-        const int lo = i * WORD_BITS;
+    lfsr_t next_state = (state >> 1);
+    // Se desplaza el registro una posición hacia la derecha.
 
-        // Calcula el bit más significativo del segmento actual.
-        const int hi = lo + WORD_BITS - 1;
+    next_state[15] = new_bit;
+    // El nuevo bit se inserta en la posición más significativa.
 
-        // Copia la palabra i dentro del rango [hi:lo] de la muestra.
-        sample.range(hi, lo) = in_words[i];
-    }
-
-    // Retorna la muestra de 800 bits.
-    return sample;
+    return next_state;
+    // Se retorna el nuevo estado pseudoaleatorio.
 }
 
-// ============================================================================
-// Convierte una muestra lógica de 800 bits a 25 palabras de 32 bits.
-// ----------------------------------------------------------------------------
-// Usa la misma convención de orden que words_to_sample().
-// ============================================================================
-void sample_to_words(sample_t sample, word_t out_words[WORDS_PER_SAMPLE]) {
-    // Recorre las 25 palabras destino.
-    for (int i = 0; i < WORDS_PER_SAMPLE; i++) {
-        // Permite expansión total del bucle para simplificar hardware.
-#pragma HLS UNROLL
+// ============================================================
+// Validación de one-hot
+// ============================================================
 
-        // Calcula el bit menos significativo del segmento actual.
-        const int lo = i * WORD_BITS;
+bool is_valid_onehot(label_oh_t label_onehot) {
+#pragma HLS INLINE
+    // Se fuerza inline para mantener la lógica simple dentro del kernel.
 
-        // Calcula el bit más significativo del segmento actual.
-        const int hi = lo + WORD_BITS - 1;
+    ap_uint<4> count_ones = 0;
+    // Se usa un contador pequeño para saber cuántos bits en 1 hay.
 
-        // Extrae el rango [hi:lo] y lo guarda como palabra de 32 bits.
-        out_words[i] = sample.range(hi, lo);
-    }
-}
-
-// ============================================================================
-// Extrae el label one-hot desde la muestra.
-// ----------------------------------------------------------------------------
-// Layout asumido:
-// - bits [799:790] = label one-hot
-// ============================================================================
-label_oh_t extract_label_onehot(sample_t sample) {
-    // Extrae los 10 bits superiores de la muestra.
-    return sample.range(SAMPLE_BITS - 1, SAMPLE_BITS - LABEL_BITS);
-}
-
-// ============================================================================
-// Extrae los pixeles desde la muestra.
-// ----------------------------------------------------------------------------
-// Layout asumido:
-// - bits [789:6] = 784 bits de pixeles
-// ============================================================================
-pixels_t extract_pixels(sample_t sample) {
-    // Bit superior de los pixeles, justo debajo del label.
-    const int hi = SAMPLE_BITS - LABEL_BITS - 1;
-
-    // Bit inferior de los pixeles, justo encima del padding.
-    const int lo = PADDING_BITS;
-
-    // Extrae el rango de pixeles.
-    return sample.range(hi, lo);
-}
-
-// ============================================================================
-// Extrae el padding desde la muestra.
-// ----------------------------------------------------------------------------
-// Layout asumido:
-// - bits [5:0] = padding
-// ============================================================================
-padding_t extract_padding(sample_t sample) {
-    // Extrae los 6 bits menos significativos.
-    return sample.range(PADDING_BITS - 1, 0);
-}
-
-// ============================================================================
-// Construye una muestra desde label, pixeles y padding.
-// ----------------------------------------------------------------------------
-// Layout resultante:
-// - bits [799:790] = label
-// - bits [789:6]   = pixeles
-// - bits [5:0]     = padding
-// ============================================================================
-sample_t build_sample(label_oh_t label, pixels_t pixels, padding_t padding) {
-    // Crea la muestra de salida inicializada en cero.
-    sample_t sample = 0;
-
-    // Inserta el padding en los bits bajos.
-    sample.range(PADDING_BITS - 1, 0) = padding;
-
-    // Inserta los pixeles encima del padding.
-    sample.range(SAMPLE_BITS - LABEL_BITS - 1, PADDING_BITS) = pixels;
-
-    // Inserta el label en los bits más altos.
-    sample.range(SAMPLE_BITS - 1, SAMPLE_BITS - LABEL_BITS) = label;
-
-    // Retorna la muestra armada.
-    return sample;
-}
-
-// ============================================================================
-// Decodifica un label one-hot a índice.
-// ----------------------------------------------------------------------------
-// Ejemplo:
-// 0000000010 -> 1
-//
-// Si hubiese más de un bit en 1, se conserva el último detectado.
-// En un dataset correcto solo debe existir un bit en 1.
-// ============================================================================
-label_idx_t decode_onehot(label_oh_t label) {
-    // Índice por defecto.
-    label_idx_t idx = 0;
-
-    // Recorre los 10 bits del one-hot.
     for (int i = 0; i < NUM_CLASSES; i++) {
-        // Pide al compilador expandir completamente este bucle.
 #pragma HLS UNROLL
+        // Se desenrolla completamente porque solo hay 10 iteraciones fijas.
 
-        // Si el bit i está en 1, entonces el índice es i.
-        if (label[i] == 1) {
-            idx = (label_idx_t)i;
+        if (label_onehot[i] == 1) {
+            count_ones++;
+            // Se incrementa el contador por cada bit encendido.
         }
     }
 
-    // Retorna el índice decodificado.
-    return idx;
+    return (count_ones == 1);
+    // Un label one-hot válido debe tener exactamente un bit activo.
 }
 
-// ============================================================================
-// Codifica un índice [0..9] a one-hot de 10 bits.
-// ----------------------------------------------------------------------------
-// Ejemplo:
-// 1 -> 0000000010
-// ============================================================================
-label_oh_t encode_onehot(label_idx_t idx) {
-    // Inicializa el vector one-hot en cero.
-    label_oh_t label = 0;
+// ============================================================
+// one-hot -> índice
+// ============================================================
 
-    // Activa únicamente el bit correspondiente al índice.
-    label[idx] = 1;
+label_idx_t decode_onehot(label_oh_t label_onehot) {
+#pragma HLS INLINE
+    // Esta función también se integra inline.
 
-    // Retorna el label one-hot.
-    return label;
+    label_idx_t label_idx = 0;
+    // Se inicializa el índice en 0 como valor por defecto.
+
+    for (int i = 0; i < NUM_CLASSES; i++) {
+#pragma HLS UNROLL
+        // Se desenrolla por ser un lazo pequeño y fijo.
+
+        if (label_onehot[i] == 1) {
+            label_idx = (label_idx_t)i;
+            // Si el bit i está activo, entonces la clase correspondiente es i.
+        }
+    }
+
+    return label_idx;
+    // Se retorna el índice detectado.
 }
 
-// ============================================================================
-// LFSR de 16 bits.
-// ----------------------------------------------------------------------------
-// Polinomio simple para pseudoaleatoriedad barata en hardware.
-// ============================================================================
-lfsr_t lfsr16_next(lfsr_t state) {
-    // Calcula el nuevo bit usando taps del registro actual.
-    bool new_bit = state[0] ^ state[2] ^ state[3] ^ state[5];
+// ============================================================
+// índice -> one-hot
+// ============================================================
 
-    // Desplaza el registro hacia la derecha.
-    lfsr_t next = (state >> 1);
+label_oh_t encode_onehot(label_idx_t label_idx) {
+#pragma HLS INLINE
+    // Se fuerza inline para que sea lógica combinacional simple.
 
-    // Inserta el nuevo bit en la posición más alta.
-    next[15] = new_bit;
+    label_oh_t label_onehot = 0;
+    // Primero se limpia todo el vector.
 
-    // Retorna el siguiente estado.
-    return next;
+    label_onehot[label_idx] = 1;
+    // Se activa únicamente el bit correspondiente al índice dado.
+
+    return label_onehot;
+    // Se retorna el vector one-hot resultante.
 }
 
-// ============================================================================
-// Genera una etiqueta incorrecta distinta de la verdadera.
-// ----------------------------------------------------------------------------
-// Estrategia:
-// - genera un offset entre 1 y 9
-// - calcula (true_label + offset) mod 10
-//
-// Esto garantiza matemáticamente que wrong_label != true_label.
-// ============================================================================
-label_idx_t gen_wrong_label_excluding_true(label_idx_t true_label, lfsr_t &state) {
-    // Avanza el estado del generador pseudoaleatorio.
+// ============================================================
+// Generación de etiqueta negativa excluyente
+// ============================================================
+
+label_idx_t generate_negative_label(label_idx_t true_label, lfsr_t &state) {
+#pragma HLS INLINE
+    // La función se integra inline para que forme parte del pipeline principal.
+
     state = lfsr16_next(state);
+    // Se avanza el estado del generador pseudoaleatorio.
 
-    // Toma 4 bits del LFSR, calcula módulo 9 y suma 1.
-    // Resultado garantizado en el rango [1..9].
     ap_uint<4> offset = (state.range(3, 0) % 9) + 1;
+    // Se genera un desplazamiento entre 1 y 9.
+    // Nunca puede ser 0, así se evita repetir la clase original.
 
-    // Suma temporal con 5 bits para evitar desbordamiento.
-    ap_uint<5> tmp = true_label + offset;
+    ap_uint<5> temp = true_label + offset;
+    // Se suma el desplazamiento a la etiqueta verdadera.
 
-    // Aplica módulo 10 manualmente para mantenerlo simple.
-    label_idx_t wrong_label = (tmp >= 10) ? (label_idx_t)(tmp - 10)
-                                          : (label_idx_t)tmp;
+    label_idx_t negative_label = (temp >= 10) ? (label_idx_t)(temp - 10) : (label_idx_t)temp;
+    // Se aplica módulo 10 manualmente.
+    // Esto garantiza que el resultado siempre esté en [0, 9].
 
-    // Retorna una etiqueta que nunca coincide con la verdadera.
-    return wrong_label;
+    return negative_label;
+    // Se retorna una clase incorrecta y distinta de la original.
 }
 
-// ============================================================================
-// Función top del kernel.
-// ----------------------------------------------------------------------------
-// Por cada muestra:
-// 1. la lee desde memoria
-// 2. la desempaqueta
-// 3. preserva el positivo
-// 4. genera un label negativo distinto
-// 5. reempaqueta y escribe ambas salidas
-// ============================================================================
-void forward_fw(
+// ============================================================
+// Carga de una muestra desde 25 words de 32 bits
+// ============================================================
+
+raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
+#pragma HLS INLINE
+    // Se integra inline para no crear sobrecosto de llamada.
+
+    raw_sample_t sample = 0;
+    // Se inicializa el contenedor de 800 bits en cero.
+
+    int base = sample_idx * WORDS_PER_SAMPLE;
+    // Se calcula el índice base donde empieza la muestra sample_idx en memoria lineal.
+
+    for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
+#pragma HLS UNROLL
+        // Se desenrolla el lazo porque siempre son 25 words exactas.
+
+        sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS) = mem[base + w];
+        // La palabra w se coloca en su rango correspondiente dentro de los 800 bits.
+        // word 0 -> bits [31:0]
+        // word 1 -> bits [63:32]
+        // ...
+        // word 24 -> bits [799:768]
+    }
+
+    return sample;
+    // Se retorna la muestra ya armada como vector de 800 bits.
+}
+
+// ============================================================
+// Almacenamiento de una muestra en 25 words de 32 bits
+// ============================================================
+
+void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
+#pragma HLS INLINE
+    // Se fuerza inline para simplificar el datapath.
+
+    int base = sample_idx * WORDS_PER_SAMPLE;
+    // Se calcula la posición base donde se escribirá la muestra sample_idx.
+
+    for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
+#pragma HLS UNROLL
+        // Se desenrolla completamente porque el número de words es fijo.
+
+        mem[base + w] = sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS);
+        // Se extrae cada bloque de 32 bits del vector completo y se escribe en memoria.
+    }
+}
+
+// ============================================================
+// Desempaquetado de la muestra
+// Layout confirmado:
+//   label_onehot = bits [9:0]
+//   pixels       = bits [793:10]
+//   padding      = bits [799:794]
+// ============================================================
+
+void unpack_sample(
+    raw_sample_t sample,
+    label_oh_t &label_onehot,
+    pixels_t &pixels,
+    padding_t &padding
+) {
+#pragma HLS INLINE
+    // La función se integra inline porque es una mera selección de rangos.
+
+    label_onehot = sample.range(9, 0);
+    // Se extraen los 10 bits menos significativos para el label one-hot.
+
+    pixels = sample.range(793, 10);
+    // Se extraen los 784 bits centrales correspondientes a la imagen binaria.
+
+    padding = sample.range(799, 794);
+    // Se extraen los 6 bits más significativos de padding.
+}
+
+// ============================================================
+// Empaquetado de la muestra
+// ============================================================
+
+raw_sample_t pack_sample(
+    label_oh_t label_onehot,
+    pixels_t pixels,
+    padding_t padding
+) {
+#pragma HLS INLINE
+    // Se fuerza inline porque es una operación fija y pequeña.
+
+    raw_sample_t sample = 0;
+    // Se inicializa el contenedor completo en cero.
+
+    sample.range(9, 0) = label_onehot;
+    // Se coloca el label one-hot en los bits [9:0].
+
+    sample.range(793, 10) = pixels;
+    // Se coloca la imagen binaria en los bits [793:10].
+
+    sample.range(799, 794) = padding;
+    // Se colocan los 6 bits de padding en la parte más significativa.
+
+    return sample;
+    // Se retorna la muestra completa ya reempaquetada.
+}
+
+// ============================================================
+// Top function sintetizable
+// ============================================================
+
+void forward_fw_top(
     const word_t *in_mem,
     word_t *pos_mem,
     word_t *neg_mem,
-    label_idx_t *neg_labels,
+    label_idx_t *true_label_mem,
+    label_idx_t *neg_label_mem,
     int n_samples,
     uint16_t seed
 ) {
-    // Interfaz AXI master para memoria de entrada.
-#pragma HLS INTERFACE m_axi port=in_mem offset=slave bundle=gmem0
+#pragma HLS INTERFACE m_axi     port=in_mem         offset=slave bundle=gmem0
+    // Puerto AXI maestro de lectura para la memoria de entrada.
 
-    // Interfaz AXI master para memoria de salida positiva.
-#pragma HLS INTERFACE m_axi port=pos_mem offset=slave bundle=gmem1
+#pragma HLS INTERFACE m_axi     port=pos_mem        offset=slave bundle=gmem1
+    // Puerto AXI maestro de escritura para las muestras positivas.
 
-    // Interfaz AXI master para memoria de salida negativa.
-#pragma HLS INTERFACE m_axi port=neg_mem offset=slave bundle=gmem2
+#pragma HLS INTERFACE m_axi     port=neg_mem        offset=slave bundle=gmem2
+    // Puerto AXI maestro de escritura para las muestras negativas.
 
-    // Interfaz AXI master para labels negativos de depuración.
-#pragma HLS INTERFACE m_axi port=neg_labels offset=slave bundle=gmem3
+#pragma HLS INTERFACE m_axi     port=true_label_mem offset=slave bundle=gmem3
+    // Puerto AXI maestro de escritura para guardar labels verdaderos decodificados.
 
-    // Interfaces AXI-Lite de control.
-#pragma HLS INTERFACE s_axilite port=in_mem bundle=control
-#pragma HLS INTERFACE s_axilite port=pos_mem bundle=control
-#pragma HLS INTERFACE s_axilite port=neg_mem bundle=control
-#pragma HLS INTERFACE s_axilite port=neg_labels bundle=control
-#pragma HLS INTERFACE s_axilite port=n_samples bundle=control
-#pragma HLS INTERFACE s_axilite port=seed bundle=control
-#pragma HLS INTERFACE s_axilite port=return bundle=control
+#pragma HLS INTERFACE m_axi     port=neg_label_mem  offset=slave bundle=gmem4
+    // Puerto AXI maestro de escritura para guardar labels negativos decodificados.
 
-    // Estado del LFSR.
-    // Si seed es cero, se fuerza un valor no nulo.
-    lfsr_t lfsr_state = (seed == 0) ? (lfsr_t)0xACE1 : (lfsr_t)seed;
+#pragma HLS INTERFACE s_axilite port=in_mem         bundle=control
+    // Puerto de control AXI-Lite asociado al puntero de entrada.
 
-    // Buffer local para leer una muestra completa de 25 palabras.
-    word_t in_words[WORDS_PER_SAMPLE];
+#pragma HLS INTERFACE s_axilite port=pos_mem        bundle=control
+    // Puerto de control AXI-Lite asociado al puntero de salida positiva.
 
-    // Buffer local para la salida positiva.
-    word_t pos_words[WORDS_PER_SAMPLE];
+#pragma HLS INTERFACE s_axilite port=neg_mem        bundle=control
+    // Puerto de control AXI-Lite asociado al puntero de salida negativa.
 
-    // Buffer local para la salida negativa.
-    word_t neg_words[WORDS_PER_SAMPLE];
+#pragma HLS INTERFACE s_axilite port=true_label_mem bundle=control
+    // Puerto de control AXI-Lite para el buffer de labels verdaderos.
 
-    // Loop principal por muestra.
-    sample_loop:
-    for (int s = 0; s < n_samples; s++) {
-        // Pipelining por muestra.
+#pragma HLS INTERFACE s_axilite port=neg_label_mem  bundle=control
+    // Puerto de control AXI-Lite para el buffer de labels negativos.
+
+#pragma HLS INTERFACE s_axilite port=n_samples      bundle=control
+    // Puerto de control AXI-Lite para la cantidad de muestras a procesar.
+
+#pragma HLS INTERFACE s_axilite port=seed           bundle=control
+    // Puerto de control AXI-Lite para la semilla inicial del LFSR.
+
+#pragma HLS INTERFACE s_axilite port=return         bundle=control
+    // Puerto AXI-Lite de retorno obligatorio para el top function.
+
+    lfsr_t prng_state = (seed == 0) ? (lfsr_t)0xACE1 : (lfsr_t)seed;
+    // Se inicializa el estado pseudoaleatorio.
+    // Si la semilla vale 0, se usa una semilla fija no nula para evitar atascar el LFSR.
+
+sample_loop:
+    for (int i = 0; i < n_samples; i++) {
 #pragma HLS PIPELINE II=1
+        // Se pipelinea el procesamiento por muestra para mejorar throughput.
 
-        // --------------------------------------------------------------------
-        // 1. Leer 25 palabras desde memoria externa.
-        // --------------------------------------------------------------------
-        read_loop:
-        for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
-#pragma HLS UNROLL
-            in_words[w] = in_mem[s * WORDS_PER_SAMPLE + w];
-        }
+        raw_sample_t input_sample = load_sample_from_words(in_mem, i);
+        // Se lee la muestra i desde memoria externa y se arma en 800 bits.
 
-        // --------------------------------------------------------------------
-        // 2. Convertir las 25 palabras a una muestra lógica de 800 bits.
-        // --------------------------------------------------------------------
-        sample_t in_sample = words_to_sample(in_words);
+        label_oh_t input_label_onehot;
+        // Variable para almacenar el one-hot original.
 
-        // --------------------------------------------------------------------
-        // 3. Desempaquetar componentes.
-        // --------------------------------------------------------------------
-        label_oh_t true_label_oh = extract_label_onehot(in_sample);
-        pixels_t pixels = extract_pixels(in_sample);
-        padding_t padding = extract_padding(in_sample);
+        pixels_t input_pixels;
+        // Variable para almacenar la imagen binaria.
 
-        // --------------------------------------------------------------------
-        // 4. Decodificar el label verdadero.
-        // --------------------------------------------------------------------
-        label_idx_t true_label_idx = decode_onehot(true_label_oh);
+        padding_t input_padding;
+        // Variable para almacenar el padding.
 
-        // --------------------------------------------------------------------
-        // 5. Generar etiqueta incorrecta distinta de la real.
-        // --------------------------------------------------------------------
-        label_idx_t wrong_label_idx = gen_wrong_label_excluding_true(true_label_idx, lfsr_state);
+        unpack_sample(input_sample, input_label_onehot, input_pixels, input_padding);
+        // Se separan los campos de la muestra de entrada.
 
-        // --------------------------------------------------------------------
-        // 6. Codificar la etiqueta incorrecta a one-hot.
-        // --------------------------------------------------------------------
-        label_oh_t wrong_label_oh = encode_onehot(wrong_label_idx);
+        label_idx_t true_label_idx = decode_onehot(input_label_onehot);
+        // Se decodifica el one-hot original a índice entero.
 
-        // --------------------------------------------------------------------
-        // 7. Construir muestra positiva.
-        //    Conserva exactamente label, pixeles y padding originales.
-        // --------------------------------------------------------------------
-        sample_t pos_sample = build_sample(true_label_oh, pixels, padding);
+        label_idx_t neg_label_idx = generate_negative_label(true_label_idx, prng_state);
+        // Se genera una etiqueta negativa garantizada distinta de la verdadera.
 
-        // --------------------------------------------------------------------
-        // 8. Construir muestra negativa.
-        //    Conserva pixeles y padding, reemplaza únicamente el label.
-        // --------------------------------------------------------------------
-        sample_t neg_sample = build_sample(wrong_label_oh, pixels, padding);
+        label_oh_t neg_label_onehot = encode_onehot(neg_label_idx);
+        // Se convierte la etiqueta negativa a formato one-hot.
 
-        // --------------------------------------------------------------------
-        // 9. Convertir ambas muestras a 25 palabras de 32 bits.
-        // --------------------------------------------------------------------
-        sample_to_words(pos_sample, pos_words);
-        sample_to_words(neg_sample, neg_words);
+        raw_sample_t positive_sample = pack_sample(input_label_onehot, input_pixels, input_padding);
+        // La muestra positiva conserva el label original, los mismos pixels y el mismo padding.
 
-        // --------------------------------------------------------------------
-        // 10. Escribir resultados en memoria externa.
-        // --------------------------------------------------------------------
-        write_loop:
-        for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
-#pragma HLS UNROLL
-            pos_mem[s * WORDS_PER_SAMPLE + w] = pos_words[w];
-            neg_mem[s * WORDS_PER_SAMPLE + w] = neg_words[w];
-        }
+        raw_sample_t negative_sample = pack_sample(neg_label_onehot, input_pixels, input_padding);
+        // La muestra negativa solo cambia el label; pixels y padding se conservan.
 
-        // --------------------------------------------------------------------
-        // 11. Guardar el índice de la etiqueta negativa para depuración.
-        // --------------------------------------------------------------------
-        neg_labels[s] = wrong_label_idx;
+        store_sample_to_words(pos_mem, i, positive_sample);
+        // Se escribe la muestra positiva en la memoria de salida correspondiente.
+
+        store_sample_to_words(neg_mem, i, negative_sample);
+        // Se escribe la muestra negativa en la memoria de salida correspondiente.
+
+        true_label_mem[i] = true_label_idx;
+        // Se guarda el índice del label verdadero para depuración o verificación posterior.
+
+        neg_label_mem[i] = neg_label_idx;
+        // Se guarda el índice del label negativo generado.
     }
 }

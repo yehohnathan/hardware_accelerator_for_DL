@@ -1,0 +1,1041 @@
+  **** HLS Build v2024.2 5238294
+INFO: [HLS 200-2005] Using work_dir D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_component 
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.xilinx.com/access/sources/dita/topic?Doc_Version=2024.2%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+INFO: [HLS 200-1465] Applying ini 'syn.file=forward_fw.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(9)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/forward_fw.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=forward_fw.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(10)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/forward_fw.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(11)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(12)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'tb.file=train_tb.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(7)
+INFO: [HLS 200-10] Adding test bench file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/train_tb.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.top=train_tb' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(8)
+INFO: [HLS 200-1465] Applying ini 'flow_target=vivado' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(4)
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.xilinx.com/access/sources/dita/topic?Doc_Version=2024.2%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+INFO: [HLS 200-1465] Applying ini 'part=xa7a100tcsg324-2I' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(1)
+INFO: [HLS 200-1611] Setting target device to 'xa7a100t-csg324-2I'
+INFO: [HLS 200-1465] Applying ini 'package.output.format=ip_catalog' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(5)
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch CLANG as the compiler.
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../train_tb.cpp in debug mode
+csim.mk:88: recipe for target 'obj/train_tb.o' failed
+In file included from ../../../../train_tb.cpp:6:
+In file included from ../../../../forward_fw.hpp:5:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+../../../../train_tb.cpp:86:15: error: invalid operands to binary expression ('std::ostream' (aka 'basic_ostream<char>') and 'SampleFields')
+    std::cout << first_fields;
+    ~~~~~~~~~ ^  ~~~~~~~~~~~~
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/system_error:217:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'const std::error_code' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:511:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'char' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __out, char __c)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:517:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'char' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, char __c)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:523:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'signed char' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, signed char __c)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:528:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'unsigned char' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:565:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'const char *' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:578:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'const signed char *' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, const signed char* __s)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:583:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'const unsigned char *' for 2nd argument
+    operator<<(basic_ostream<char, _Traits>& __out, const unsigned char* __s)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/bits/ostream.tcc:321:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'const char *' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
+    ^
+C:/Xilinx/Vitis/2024.2/include/gmp.h:2406:33: note: candidate function not viable: no known conversion from 'SampleFields' to 'mpz_srcptr' (aka 'const __mpz_struct *') for 2nd argument
+__GMP_DECLSPEC_XX std::ostream& operator<< (std::ostream &, mpz_srcptr);
+                                ^
+C:/Xilinx/Vitis/2024.2/include/gmp.h:2407:33: note: candidate function not viable: no known conversion from 'SampleFields' to 'mpq_srcptr' (aka 'const __mpq_struct *') for 2nd argument
+__GMP_DECLSPEC_XX std::ostream& operator<< (std::ostream &, mpq_srcptr);
+                                ^
+C:/Xilinx/Vitis/2024.2/include/gmp.h:2408:33: note: candidate function not viable: no known conversion from 'SampleFields' to 'mpf_srcptr' (aka 'const __mpf_struct *') for 2nd argument
+__GMP_DECLSPEC_XX std::ostream& operator<< (std::ostream &, mpf_srcptr);
+                                ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:79:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'std::_Resetiosflags' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Resetiosflags __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:109:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'std::_Setiosflags' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setiosflags __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:143:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'std::_Setbase' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setbase __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:208:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'std::_Setprecision' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setprecision __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:238:5: note: candidate function template not viable: no known conversion from 'SampleFields' to 'std::_Setw' for 2nd argument
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setw __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:506:5: note: candidate template ignored: deduced conflicting types for parameter '_CharT' ('char' vs. 'SampleFields')
+    operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/bits/basic_string.h:6424:5: note: candidate template ignored: could not match 'basic_string<_CharT, _Traits, _Alloc>' against 'SampleFields'
+    operator<<(basic_ostream<_CharT, _Traits>& __os,
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:548:5: note: candidate template ignored: could not match 'const _CharT *' against 'SampleFields'
+    operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
+    ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:6138:15: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S>' against 'SampleFields'
+std::ostream &operator<<(std::ostream &os, const ap_private<_AP_W, _AP_S> &x) {
+              ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7180:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(bool, 1, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7180:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7181:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(char, 8, CHAR_IS_SIGNED)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7181:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7182:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(signed char, 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7182:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7183:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(unsigned char, 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7183:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7184:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(short, sizeof(short) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7184:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7185:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(unsigned short, sizeof(unsigned short) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7185:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7186:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(int, sizeof(int) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7186:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7187:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(unsigned int, sizeof(unsigned int) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7187:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7188:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(long, sizeof(long) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7188:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7189:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(unsigned long, sizeof(unsigned long) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7189:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7190:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(ap_slong, sizeof(ap_slong) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7190:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7191:1: note: candidate template ignored: could not match 'ap_private<_AP_W, _AP_S, false>' against 'SampleFields'
+OPS_MIX_INT(ap_ulong, sizeof(ap_ulong) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7123:30: note: expanded from macro 'OP_BIN_SHIFT_INT'
+  HLS_CONSTEXPR_EXTRA C_TYPE operator BIN_OP(C_TYPE i_op,                                          \
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7191:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7160:3: note: expanded from macro 'OPS_MIX_INT'
+  OP_BIN_SHIFT_INT(<<, C_TYPE, (_AP_W2), (_AP_S2), arg1) \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7130:7: note: expanded from macro 'OP_BIN_SHIFT_INT'
+      operator BIN_OP(const ap_private<_AP_W, _AP_S>& op, C_TYPE i_op) {       \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7255:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+OP_BIN_MIX_RANGE(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7205:3: note: expanded from macro 'OP_BIN_MIX_RANGE'
+  operator BIN_OP(const _private_range_ref<_AP_W1, _AP_S1>& op1,            \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7255:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7212:3: note: expanded from macro 'OP_BIN_MIX_RANGE'
+  operator BIN_OP(const ap_private<_AP_W1, _AP_S1>& op1,                    \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7342:1: note: candidate template ignored: could not match '_private_bit_ref' against 'basic_ostream'
+OP_BIN_MIX_BIT(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7281:3: note: expanded from macro 'OP_BIN_MIX_BIT'
+  operator BIN_OP(const _private_bit_ref<_AP_W1, _AP_S1>& op1,                \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7342:1: note: candidate template ignored: could not match 'ap_private' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7287:3: note: expanded from macro 'OP_BIN_MIX_BIT'
+  operator BIN_OP(const ap_private<_AP_W1, _AP_S1>& op1,                      \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7432:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(bool, 1, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7432:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7433:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(char, 8, CHAR_IS_SIGNED)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7433:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7434:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(signed char, 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7434:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7435:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(unsigned char, 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7435:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7436:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(short, sizeof(short) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7436:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7437:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(unsigned short, sizeof(unsigned short) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7437:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7438:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(int, sizeof(int) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7438:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7439:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(unsigned int, sizeof(unsigned int) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7439:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7440:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(long, sizeof(long) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7440:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7441:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(unsigned long, sizeof(unsigned long) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7441:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7442:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(ap_slong, sizeof(ap_slong) * 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7442:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7443:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_MIX_INT(ap_ulong, sizeof(ap_ulong) * 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7405:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& op,              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7443:1: note: candidate template ignored: could not match '_private_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7430:3: note: expanded from macro 'REF_BIN_MIX_INT'
+  REF_BIN_OP_MIX_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7414:7: note: expanded from macro 'REF_BIN_OP_MIX_INT'
+      operator BIN_OP(C_TYPE op2,                                              \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7466:1: note: candidate template ignored: could not match '_private_range_ref' against 'basic_ostream'
+REF_BIN_OP(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:7451:7: note: expanded from macro 'REF_BIN_OP'
+      operator BIN_OP(const _private_range_ref<_AP_W, _AP_S>& lhs,            \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1428:30: note: candidate template ignored: could not match 'ap_int_base<_AP_W, _AP_S>' against 'SampleFields'
+INLINE NODEBUG std::ostream& operator<<(std::ostream& os,
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1649:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(char, 8, CHAR_IS_SIGNED)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1650:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(signed char, 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1651:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(short, _AP_SIZE_short, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1652:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(int, _AP_SIZE_int, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1653:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(long, _AP_SIZE_long, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1654:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(ap_slong, _AP_SIZE_ap_slong, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1629:110: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1673:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(bool, 1, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1674:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(unsigned char, 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1675:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(unsigned short, _AP_SIZE_short, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1676:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(unsigned int, _AP_SIZE_int, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1677:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(unsigned long, _AP_SIZE_long, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1678:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+ALL_OP_SHIFT_WITH_INT(ap_ulong, _AP_SIZE_ap_slong, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1660:102: note: expanded from macro 'ALL_OP_SHIFT_WITH_INT'
+  HLS_CONSTEXPR INLINE NODEBUG typename ap_int_base<_AP_W, _AP_S>::template RType<_AP_W,_AP_S>::arg1 operator<<(           \
+                                                                                                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1841:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+OP_BIN_WITH_RANGE(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1820:3: note: expanded from macro 'OP_BIN_WITH_RANGE'
+  operator BIN_OP(const ap_range_ref<_AP_W1, _AP_S1>& op1,                   \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1841:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1827:3: note: expanded from macro 'OP_BIN_WITH_RANGE'
+  operator BIN_OP(const ap_int_base<_AP_W1, _AP_S1>& op1,                    \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1950:1: note: candidate template ignored: could not match 'ap_int_base' against 'basic_ostream'
+OP_BIN_WITH_BIT(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1930:3: note: expanded from macro 'OP_BIN_WITH_BIT'
+  operator BIN_OP(const ap_int_base<_AP_W1, _AP_S1>& op1,                      \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1950:1: note: candidate template ignored: could not match 'ap_bit_ref' against 'basic_ostream'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_base.h:1936:3: note: expanded from macro 'OP_BIN_WITH_BIT'
+  operator BIN_OP(const ap_bit_ref<_AP_W1, _AP_S1>& op1,                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:731:30: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+INLINE NODEBUG std::ostream& operator<<(std::ostream& os,
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1118:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(bool, 1, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1118:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1119:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(char, 8, CHAR_IS_SIGNED)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1119:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1120:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(signed char, 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1120:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1121:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(unsigned char, 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1121:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1122:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(short, _AP_SIZE_short, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1122:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1123:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(unsigned short, _AP_SIZE_short, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1123:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1124:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(int, _AP_SIZE_int, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1124:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1125:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(unsigned int, _AP_SIZE_int, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1125:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1126:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(long, _AP_SIZE_long, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1126:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1127:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(unsigned long, _AP_SIZE_long, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1127:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1128:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(ap_slong, _AP_SIZE_ap_slong, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1128:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1129:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP_WITH_INT_BITS(ap_ulong, _AP_SIZE_ap_slong, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1075:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& op, C_TYPE op2) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1129:1: note: candidate template ignored: could not match 'ap_range_ref<_AP_W, _AP_S>' against 'SampleFields'
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1116:3: note: expanded from macro 'REF_BIN_OP_WITH_INT_BITS'
+  REF_BIN_OP_WITH_INT(<<, arg1, C_TYPE, (_AP_W2), (_AP_S2))
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1082:3: note: expanded from macro 'REF_BIN_OP_WITH_INT'
+  operator BIN_OP(C_TYPE op2, const ap_range_ref<_AP_W, _AP_S>& op) {       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1155:1: note: candidate template ignored: could not match 'ap_range_ref' against 'basic_ostream'
+REF_BIN_OP(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1140:7: note: expanded from macro 'REF_BIN_OP'
+      operator BIN_OP(const ap_range_ref<_AP_W, _AP_S>& lhs,                   \
+      ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1204:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+SYN_CONCAT_REF_BIN_OP(<<, arg1)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1189:3: note: expanded from macro 'SYN_CONCAT_REF_BIN_OP'
+  operator BIN_OP(                                                        \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1366:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(int, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1367:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(unsigned int, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1368:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(long, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1369:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(unsigned long, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1370:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(ap_slong, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1371:1: note: candidate template ignored: could not match 'ap_concat_ref' against 'basic_ostream'
+CONCAT_SHIFT_WITH_INT(ap_ulong, <<)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_int_ref.h:1359:42: note: expanded from macro 'CONCAT_SHIFT_WITH_INT'
+  INLINE NODEBUG ap_uint<_AP_W + _AP_W1> operator OP(                              \
+                                         ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2242:22: note: candidate template ignored: could not match 'ap_fixed_base<_AP_W, _AP_I, _AP_S, _AP_Q, _AP_O, _AP_N>' against 'SampleFields'
+INLINE std::ostream& operator<<(
+                     ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2373:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(bool, 1, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2374:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(char, 8, CHAR_IS_SIGNED)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2375:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(signed char, 8, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2376:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(unsigned char, 8, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2377:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(short, _AP_SIZE_short, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2378:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(unsigned short, _AP_SIZE_short, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2379:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(int, _AP_SIZE_int, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2380:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(unsigned int, _AP_SIZE_int, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2381:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(long, _AP_SIZE_long, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2382:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(unsigned long, _AP_SIZE_long, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2383:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(ap_slong, _AP_SIZE_ap_slong, true)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2384:1: note: candidate template ignored: could not match 'ap_fixed_base' against 'basic_ostream'
+ALL_AF_OP_WITH_INT(ap_ulong, _AP_SIZE_ap_slong, false)
+^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2354:3: note: expanded from macro 'ALL_AF_OP_WITH_INT'
+  AF_BIN_OP_WITH_INT_SF(<<, C_TYPE, (BITS), (SIGN), lhs)  \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_base.h:2283:3: note: expanded from macro 'AF_BIN_OP_WITH_INT_SF'
+  operator BIN_OP(                                                       \
+  ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_ref.h:202:30: note: candidate template ignored: could not match 'af_bit_ref<_AP_W, _AP_I, _AP_S, _AP_Q, _AP_O, _AP_N>' against 'SampleFields'
+INLINE NODEBUG std::ostream& operator<<(
+                             ^
+C:/Xilinx/Vitis/2024.2/include/etc/ap_fixed_ref.h:627:30: note: candidate template ignored: could not match 'af_range_ref<_AP_W, _AP_I, _AP_S, _AP_Q, _AP_O, _AP_N>' against 'SampleFields'
+INLINE NODEBUG std::ostream& operator<<(
+                             ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:691:5: note: candidate template ignored: requirement '__and_<std::__not_<std::is_lvalue_reference<std::basic_ostream<char, std::char_traits<char>> &>>, std::__is_convertible_to_basic_ostream<std::basic_ostream<char, std::char_traits<char>> &>, std::__is_insertable<std::basic_ostream<char, std::char_traits<char>> &, const SampleFields &, void>>::value' was not satisfied [with _Ostream = std::basic_ostream<char> &, _Tp = SampleFields]
+    operator<<(_Ostream&& __os, const _Tp& __x)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:178:5: note: candidate template ignored: could not match '_Setfill<_CharT>' against 'SampleFields'
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Setfill<_CharT> __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:311:5: note: candidate template ignored: could not match '_Put_money<_MoneyT>' against 'SampleFields'
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Put_money<_MoneyT> __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/iomanip:363:5: note: candidate template ignored: could not match '_Put_time<_CharT>' against 'SampleFields'
+    operator<<(basic_ostream<_CharT, _Traits>& __os, _Put_time<_CharT> __f)
+    ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:108:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'std::basic_ostream<char>::__ostream_type &(*)(std::basic_ostream<char>::__ostream_type &)' (aka 'basic_ostream<char, std::char_traits<char>> &(*)(basic_ostream<char, std::char_traits<char>> &)') for 1st argument
+      operator<<(__ostream_type& (*__pf)(__ostream_type&))
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:117:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'std::basic_ostream<char>::__ios_type &(*)(std::basic_ostream<char>::__ios_type &)' (aka 'basic_ios<char, std::char_traits<char>> &(*)(basic_ios<char, std::char_traits<char>> &)') for 1st argument
+      operator<<(__ios_type& (*__pf)(__ios_type&))
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:127:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'std::ios_base &(*)(std::ios_base &)' for 1st argument
+      operator<<(ios_base& (*__pf) (ios_base&))
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:166:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'long' for 1st argument
+      operator<<(long __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:170:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'unsigned long' for 1st argument
+      operator<<(unsigned long __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:174:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'bool' for 1st argument
+      operator<<(bool __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:178:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'short' for 1st argument
+      operator<<(short __n);
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:181:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'unsigned short' for 1st argument
+      operator<<(unsigned short __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:189:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'int' for 1st argument
+      operator<<(int __n);
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:192:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'unsigned int' for 1st argument
+      operator<<(unsigned int __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:201:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'long long' for 1st argument
+      operator<<(long long __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:205:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'unsigned long long' for 1st argument
+      operator<<(unsigned long long __n)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:220:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'double' for 1st argument
+      operator<<(double __f)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:224:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'float' for 1st argument
+      operator<<(float __f)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:232:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'long double' for 1st argument
+      operator<<(long double __f)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:245:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'const void *' for 1st argument; take the address of the argument with &
+      operator<<(const void* __p)
+      ^
+C:/Xilinx/Vitis/2024.2/tps/mingw/10.0.0/win64.o/nt/include/c++/9.5.0/ostream:276:7: note: candidate function not viable: no known conversion from 'SampleFields' to 'std::basic_ostream<char>::__streambuf_type *' (aka 'basic_streambuf<char, std::char_traits<char>> *') for 1st argument
+      operator<<(__streambuf_type* __sb);
+      ^
+1 warning and 1 error generated.
+make: *** [obj/train_tb.o] Error 1
+ERROR: [SIM 211-100] 'csim_design' failed: compilation error(s).
+INFO: [SIM 211-3] *************** CSIM finish ***************
+ERROR: 4
+INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 1 seconds. Total elapsed time: 7.051 seconds; peak allocated memory: 264.785 MB.

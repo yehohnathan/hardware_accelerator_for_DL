@@ -1,40 +1,62 @@
 #ifndef DEBUG_UTILS_HPP
 #define DEBUG_UTILS_HPP
 
-// ============================================================================
-// debug_utils.hpp
-// ----------------------------------------------------------------------------
-// Utilidades para imprimir y verificar el contenido de las muestras en el
-// testbench. Estas funciones NO forman parte del kernel HLS.
-// ============================================================================
+#include <vector>         // Se usa std::vector para almacenar el contenido del binario en el testbench.
+#include <string>         // Se usa std::string para nombres y mensajes de debug.
+#include "forward_fw.hpp" // Se reutilizan los tipos y constantes definidos para el kernel.
 
-#include "forward_fw.hpp"
+// ============================================================
+// Utilidades de depuración para C simulation / testbench
+// ============================================================
 
-// Biblioteca de C++ para salida por consola.
-#include <iostream>
+// Lee un archivo binario completo como words de 32 bits.
+bool read_binary_file_words(const std::string &file_path, std::vector<word_t> &buffer);
 
-// Biblioteca para formateo.
-#include <iomanip>
+// Extrae una muestra concreta (25 words) desde un vector lineal.
+void extract_sample_words(
+    const std::vector<word_t> &buffer,
+    int sample_idx,
+    word_t sample_words[WORDS_PER_SAMPLE]
+);
 
-// Biblioteca para cadenas.
-#include <string>
+// Imprime las 25 palabras de una muestra en hexadecimal.
+void print_sample_words(
+    const word_t sample_words[WORDS_PER_SAMPLE],
+    const std::string &title
+);
 
-// Imprime un label one-hot de 10 bits.
-void print_label_onehot(label_oh_t label, const std::string &name);
-
-// Imprime un índice de etiqueta.
-void print_label_index(label_idx_t idx, const std::string &name);
+// Imprime el label one-hot como vector de 10 posiciones.
+void print_label_onehot(label_oh_t label_onehot);
 
 // Imprime el padding de 6 bits.
-void print_padding_bits(padding_t padding, const std::string &name);
+void print_padding_bits(padding_t padding);
 
-// Imprime una cantidad limitada de pixeles para inspección.
-void print_pixels_preview(pixels_t pixels, const std::string &name, int count);
+// Imprime un resumen de pixels: cantidad de unos y una ventana inicial de bits.
+void print_pixels_summary(pixels_t pixels, int preview_count = 64);
 
-// Imprime las 25 palabras de una muestra.
-void print_words_25x32(const word_t words[WORDS_PER_SAMPLE], const std::string &name);
+// Imprime toda la información desempaquetada de una muestra.
+void print_unpacked_sample(
+    raw_sample_t sample,
+    const std::string &title
+);
 
-// Verifica si dos bloques de 25 palabras son iguales.
-bool compare_words_25x32(const word_t a[WORDS_PER_SAMPLE], const word_t b[WORDS_PER_SAMPLE]);
+// Compara si dos muestras tienen exactamente los mismos pixels.
+bool same_pixels(raw_sample_t a, raw_sample_t b);
+
+// Compara si dos muestras tienen exactamente el mismo padding.
+bool same_padding(raw_sample_t a, raw_sample_t b);
+
+// Compara si dos muestras son idénticas bit a bit.
+bool same_raw_sample(raw_sample_t a, raw_sample_t b);
+
+// Imprime un separador visual en consola.
+void print_separator(const std::string &title);
+
+// Mostrar un rango de muestras del binario
+void print_samples_range(
+    const std::vector<word_t> &buffer,
+    int start_sample,
+    int num_samples
+);
 
 #endif

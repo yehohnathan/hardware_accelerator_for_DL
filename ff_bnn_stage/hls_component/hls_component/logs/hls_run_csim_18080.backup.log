@@ -1,0 +1,325 @@
+  **** HLS Build v2024.2 5238294
+INFO: [HLS 200-2005] Using work_dir D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_component 
+INFO: [HLS 200-1505] Using default flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.xilinx.com/access/sources/dita/topic?Doc_Version=2024.2%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+INFO: [HLS 200-1465] Applying ini 'syn.file=forward_fw.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(9)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/forward_fw.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=forward_fw.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(10)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/forward_fw.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(11)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(12)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'tb.file=train_tb.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(7)
+INFO: [HLS 200-10] Adding test bench file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/train_tb.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.top=train_tb' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(8)
+INFO: [HLS 200-1465] Applying ini 'flow_target=vivado' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(4)
+INFO: [HLS 200-1505] Using flow_target 'vivado'
+Resolution: For help on HLS 200-1505 see docs.xilinx.com/access/sources/dita/topic?Doc_Version=2024.2%20English&url=ug1448-hls-guidance&resourceid=200-1505.html
+INFO: [HLS 200-1465] Applying ini 'part=xa7a100tcsg324-2I' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(1)
+INFO: [HLS 200-1611] Setting target device to 'xa7a100t-csg324-2I'
+INFO: [HLS 200-1465] Applying ini 'package.output.format=ip_catalog' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(5)
+INFO: [SIM 211-2] *************** CSIM start ***************
+INFO: [SIM 211-4] CSIM will launch CLANG as the compiler.
+INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../train_tb.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../train_tb.cpp:1:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+========================================
+INFORMACION DEL ARCHIVO DE ENTRADA
+========================================
+Palabras totales leidas : 1060500
+Muestras detectadas     : 42420
+========================================
+
+Se simularan 16 muestras de un total de 42420.
+
+======== MUESTRAS ORIGINALES ========
+
+########################################
+ENTRADA ORIGINAL | sample_idx = 0
+########################################
+========================================
+Muestra: 0
+========================================
+Label one-hot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Label decodificado: 0
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . . . . . . . . # . . . . . . . . # . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . # # # . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . # # # . . . . . . . . # # . . . . 
+. . . . . . . . . . . . . . . . . . . . # # # . . . . . 
+. # # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. # . . . . . . . . # # # # . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . # # # # . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+# # # . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . # # # # . . . . . . # # # . . . . . . . 
+. . . . . . . . . . . . . . . . . # # # # . . . . . . # 
+# # . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . # # # . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . # # # . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . # # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+
+########################################
+ENTRADA ORIGINAL | sample_idx = 1
+########################################
+========================================
+Muestra: 1
+========================================
+Label one-hot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Label decodificado: 0
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . # . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . # # # # # # # # . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # # . . . . . . . . . . . . . . . . . . . . 
+. . . . # # # # # # # # # # # # . . . . . . # # # # . . 
+. . . . . . . . . . . # # # # # # . . # # # # # # . . . 
+. . . # # # . . . . . . . . . . . . # # # # # . . . . # 
+# # . . . . . . . . . # # # . . . . . . . . . . . . # # 
+# # # . . . # # # . . . . . . . . . . # # # . . . . . . 
+. . . . . # # # # . . . . # # # # . . . . . . . . . . # 
+# # . . . . . . . . . . . # . . . . . . . # # # . . . . 
+. . . . . . . # # # # . . . . . . . # . . . . . . . . . 
+. # # # . . . . . . . . . . . # # # # . . . # # # # . . 
+. . . . . . . . . # # # . . . . . . . . . . . # # # . . 
+. # # # # # . . . . . . . . . . . # # # # . . . . . . . 
+. . # . . . . . # # # # # . . . . . . . . . . . . . # # 
+# # . . . . . # # # # # # # # # # # # # . . . . . . . . 
+. . . . . . # # # # . . . . . . # # # # # # # # # # # . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # # # # . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+======== VERIFICACION FUNCIONAL ========
+sample  0 | true=0 | pos=0 | neg=1 | neg_mem=1
+sample  1 | true=0 | pos=0 | neg=9 | neg_mem=9
+sample  2 | true=3 | pos=3 | neg=7 | neg_mem=7
+sample  3 | true=4 | pos=4 | neg=0 | neg_mem=0
+sample  4 | true=0 | pos=0 | neg=8 | neg_mem=8
+sample  5 | true=0 | pos=0 | neg=4 | neg_mem=4
+sample  6 | true=0 | pos=0 | neg=1 | neg_mem=1
+sample  7 | true=0 | pos=0 | neg=4 | neg_mem=4
+sample  8 | true=0 | pos=0 | neg=7 | neg_mem=7
+sample  9 | true=0 | pos=0 | neg=3 | neg_mem=3
+sample 10 | true=0 | pos=0 | neg=6 | neg_mem=6
+sample 11 | true=0 | pos=0 | neg=2 | neg_mem=2
+sample 12 | true=0 | pos=0 | neg=6 | neg_mem=6
+sample 13 | true=0 | pos=0 | neg=2 | neg_mem=2
+sample 14 | true=0 | pos=0 | neg=6 | neg_mem=6
+sample 15 | true=0 | pos=0 | neg=3 | neg_mem=3
+
+======== MUESTRAS POSITIVAS ========
+
+########################################
+SALIDA POSITIVA | sample_idx = 0
+########################################
+========================================
+Muestra: 0
+========================================
+Label one-hot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Label decodificado: 0
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . . . . . . . . # . . . . . . . . # . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . # # # . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . # # # . . . . . . . . # # . . . . 
+. . . . . . . . . . . . . . . . . . . . # # # . . . . . 
+. # # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. # . . . . . . . . # # # # . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . # # # # . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+# # # . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . # # # # . . . . . . # # # . . . . . . . 
+. . . . . . . . . . . . . . . . . # # # # . . . . . . # 
+# # . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . # # # . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . # # # . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . # # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+
+########################################
+SALIDA POSITIVA | sample_idx = 1
+########################################
+========================================
+Muestra: 1
+========================================
+Label one-hot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Label decodificado: 0
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . # . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . # # # # # # # # . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # # . . . . . . . . . . . . . . . . . . . . 
+. . . . # # # # # # # # # # # # . . . . . . # # # # . . 
+. . . . . . . . . . . # # # # # # . . # # # # # # . . . 
+. . . # # # . . . . . . . . . . . . # # # # # . . . . # 
+# # . . . . . . . . . # # # . . . . . . . . . . . . # # 
+# # # . . . # # # . . . . . . . . . . # # # . . . . . . 
+. . . . . # # # # . . . . # # # # . . . . . . . . . . # 
+# # . . . . . . . . . . . # . . . . . . . # # # . . . . 
+. . . . . . . # # # # . . . . . . . # . . . . . . . . . 
+. # # # . . . . . . . . . . . # # # # . . . # # # # . . 
+. . . . . . . . . # # # . . . . . . . . . . . # # # . . 
+. # # # # # . . . . . . . . . . . # # # # . . . . . . . 
+. . # . . . . . # # # # # . . . . . . . . . . . . . # # 
+# # . . . . . # # # # # # # # # # # # # . . . . . . . . 
+. . . . . . # # # # . . . . . . # # # # # # # # # # # . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # # # # . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+======== MUESTRAS NEGATIVAS ========
+
+########################################
+SALIDA NEGATIVA | sample_idx = 0
+########################################
+========================================
+Muestra: 0
+========================================
+Label one-hot: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+Label decodificado: 1
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . . . . . . . . # . . . . . . . . # . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . # # # . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . # # # . . . . . . . . # # . . . . 
+. . . . . . . . . . . . . . . . . . . . # # # . . . . . 
+. # # # # . . . . . . . . . . . . . . . . . . . . . . . 
+. # . . . . . . . . # # # # . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . # # # # . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+# # # . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . # # # # . . . . . . # # # . . . . . . . 
+. . . . . . . . . . . . . . . . . # # # # . . . . . . # 
+# # . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . # # # . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . # # # . . . . . . # # . . . . . . . . . . . . 
+. . . . . . . . . . . . # # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+
+########################################
+SALIDA NEGATIVA | sample_idx = 1
+########################################
+========================================
+Muestra: 1
+========================================
+Label one-hot: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+Label decodificado: 9
+Padding: [0 0 0 0 0 0]
+Imagen 28x28 (ASCII):
+. . . . . # . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . # # # . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . # # # # # # # # . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # # . . . . . . . . . . . . . . . . . . . . 
+. . . . # # # # # # # # # # # # . . . . . . # # # # . . 
+. . . . . . . . . . . # # # # # # . . # # # # # # . . . 
+. . . # # # . . . . . . . . . . . . # # # # # . . . . # 
+# # . . . . . . . . . # # # . . . . . . . . . . . . # # 
+# # # . . . # # # . . . . . . . . . . # # # . . . . . . 
+. . . . . # # # # . . . . # # # # . . . . . . . . . . # 
+# # . . . . . . . . . . . # . . . . . . . # # # . . . . 
+. . . . . . . # # # # . . . . . . . # . . . . . . . . . 
+. # # # . . . . . . . . . . . # # # # . . . # # # # . . 
+. . . . . . . . . # # # . . . . . . . . . . . # # # . . 
+. # # # # # . . . . . . . . . . . # # # # . . . . . . . 
+. . # . . . . . # # # # # . . . . . . . . . . . . . # # 
+# # . . . . . # # # # # # # # # # # # # . . . . . . . . 
+. . . . . . # # # # . . . . . . # # # # # # # # # # # . 
+. . . . . . . . . . . . . . . . . . . . . . . . . # # # 
+# # # # # # # . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . # # # # # # . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . 
+========================================
+
+========================================
+TEST PASSED: todas las verificaciones fueron correctas.
+========================================
+INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
+INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 1 seconds. Total elapsed time: 6.884 seconds; peak allocated memory: 265.406 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 12s
