@@ -1,38 +1,38 @@
 # =============================== Librerías ================================= #
 from pathlib import Path            # Manejo limpio de rutas de archivos
-import struct                       # Empaquetado binario de datos
 import numpy as np                  # Cálculo numérico eficiente
 import pandas as pd                 # Lectura y manejo de tablas
-import matplotlib.pyplot as plt     # Visualización de imagenes
+import matplotlib.pyplot as plt     # Visualización de imágenes
 
 
 # =========================== Variables globales ============================ #
-# Tamaño lateral de la imagen MNIST: 28x28
 IMG_SIZE = 28
+# Tamaño lateral de la imagen MNIST: 28x28
 
-# Total de píxeles por imagen
 NUM_PIXELS = IMG_SIZE * IMG_SIZE
+# Total de píxeles por imagen: 784
 
-# Número de clases en MNIST: dígitos del 0 al 9
 NUM_CLASSES = 10
+# Número de clases en MNIST: dígitos del 0 al 9
 
-# Entrada total para FF: 784 bits de imagen + 10 bits one-hot
 FF_INPUT_BITS = NUM_PIXELS + NUM_CLASSES
+# Entrada total FF: 784 bits de imagen + 10 bits one-hot = 794 bits
 
-# Cantidad de bits por palabra de empaquetado
 PACK_BITS = 32
+# Cantidad de bits por palabra de empaquetado
 
-# Número de palabras de 32 bits necesarias para 784 bits
 PIX_PACK_WORDS = (NUM_PIXELS + PACK_BITS - 1) // PACK_BITS
+# Número de palabras de 32 bits necesarias para 784 bits
 
-# Número de palabras de 32 bits necesarias para 794 bits
 FF_PACK_WORDS = (FF_INPUT_BITS + PACK_BITS - 1) // PACK_BITS
+# Número de palabras de 32 bits necesarias para 794 bits
+# En este caso deben ser 25 palabras
 
 
 # =============================== Funciones ================================= #
 def load_train_table(path: str) -> tuple[np.ndarray, np.ndarray]:
     """
-    Carga un archivo MNISTcon formato:
+    Carga un archivo MNIST con formato:
     label, pixel0, pixel1, ..., pixel783
 
     Args:
@@ -42,15 +42,18 @@ def load_train_table(path: str) -> tuple[np.ndarray, np.ndarray]:
         X: Matriz de píxeles con forma (N, 784).
         y: Vector de etiquetas con forma (N,).
     """
-    path = Path(path)       # Convierte el texto de ruta a objeto Path
-    df = pd.read_csv(path)  # Lee el archivo .csv
+    path = Path(path)
+    # Convierte el texto de ruta a objeto Path
+
+    df = pd.read_csv(path)
+    # Lee el archivo CSV completo
 
     if "label" not in df.columns:
         # Verifica que exista la columna de etiquetas
         raise ValueError("No se encontró la columna 'label'.")
 
-    # Obtiene todas las columnas cuyos nombres empiezan con "pixel"
     pixel_cols = [col for col in df.columns if col.startswith("pixel")]
+    # Obtiene todas las columnas cuyos nombres empiezan con "pixel"
 
     if len(pixel_cols) != NUM_PIXELS:
         # Verifica que existan exactamente 784 columnas de píxeles
@@ -59,12 +62,14 @@ def load_train_table(path: str) -> tuple[np.ndarray, np.ndarray]:
             f"se encontraron {len(pixel_cols)}."
         )
 
-    # Convierte las columnas a una matriz NumPy
     X = df[pixel_cols].to_numpy()
-    y = df["label"].to_numpy()
+    # Convierte las columnas de píxeles a una matriz NumPy
 
-    # Devuelve la matriz de imágenes y el vector de etiquetas
+    y = df["label"].to_numpy()
+    # Convierte la columna label a un vector NumPy
+
     return X, y
+    # Devuelve la matriz de imágenes y el vector de etiquetas
 
 
 def validate_dataset(X: np.ndarray, y: np.ndarray) -> None:
@@ -77,13 +82,15 @@ def validate_dataset(X: np.ndarray, y: np.ndarray) -> None:
     """
     if X.ndim != 2 or X.shape[1] != NUM_PIXELS:
         # Revisa que X sea una matriz 2D con 784 columnas
-        raise ValueError(f"X debe tener forma (N, {NUM_PIXELS}). "
-                         f"Se obtuvo {X.shape}.")
+        raise ValueError(
+            f"X debe tener forma (N, {NUM_PIXELS}). Se obtuvo {X.shape}."
+        )
 
     if y.ndim != 1 or y.shape[0] != X.shape[0]:
         # Revisa que y sea un vector y coincida en cantidad de muestras
-        raise ValueError("Las etiquetas no coinciden con la"
-                         " cantidad de muestras.")
+        raise ValueError(
+            "Las etiquetas no coinciden con la cantidad de muestras."
+        )
 
     if X.min() < 0 or X.max() > 255:
         # Verifica que los píxeles estén entre 0 y 255
@@ -93,12 +100,20 @@ def validate_dataset(X: np.ndarray, y: np.ndarray) -> None:
         # Verifica que las etiquetas estén entre 0 y 9
         raise ValueError("Las etiquetas deben estar en el rango [0, 9].")
 
-    # Imprime un resumen del dataset validado
     print("Dataset válido.")
+    # Imprime confirmación de validación
+
     print(f"Muestras: {X.shape[0]}")
+    # Imprime la cantidad de muestras
+
     print(f"Dimensión por muestra: {X.shape[1]}")
+    # Imprime la dimensión por muestra
+
     print(f"Clases presentes: {np.unique(y)}")
+    # Imprime las clases distintas presentes
+
     print(f"Rango de píxeles: [{X.min()}, {X.max()}]")
+    # Imprime el rango de valores de píxeles
 
 
 def show_binarization_samples(
@@ -114,68 +129,89 @@ def show_binarization_samples(
         X_binary: Matriz binarizada (N, 784).
         num_samples: Cantidad de muestras a mostrar.
     """
-
-    # Selecciona índices aleatorios sin repetición
     indices = np.random.choice(X_original.shape[0], num_samples, replace=False)
+    # Selecciona índices aleatorios sin repetición
 
     plt.figure(figsize=(10, 4))
+    # Crea la figura donde se mostrarán las comparaciones
 
     for i, idx in enumerate(indices):
+        # Recorre cada índice seleccionado
 
         original_img = X_original[idx].reshape(28, 28)
+        # Reconstruye la imagen original en formato 28x28
+
         binary_img = X_binary[idx].reshape(28, 28)
+        # Reconstruye la imagen binarizada en formato 28x28
 
-        # Imagen original
         plt.subplot(2, num_samples, i + 1)
-        plt.imshow(original_img, cmap="gray")
-        plt.title(f"Original #{idx}")
-        plt.axis("off")
+        # Selecciona la posición del subplot superior
 
-        # Imagen binarizada
-        plt.subplot(2, num_samples, i + 1 + num_samples)
-        plt.imshow(binary_img, cmap="gray")
-        plt.title("Binarizada")
+        plt.imshow(original_img, cmap="gray")
+        # Muestra la imagen original
+
+        plt.title(f"Original #{idx}")
+        # Coloca el título correspondiente
+
         plt.axis("off")
+        # Oculta ejes en la imagen original
+
+        plt.subplot(2, num_samples, i + 1 + num_samples)
+        # Selecciona la posición del subplot inferior
+
+        plt.imshow(binary_img, cmap="gray")
+        # Muestra la imagen binarizada
+
+        plt.title("Binarizada")
+        # Coloca el título correspondiente
+
+        plt.axis("off")
+        # Oculta ejes en la imagen binarizada
 
     plt.suptitle("Comparación de binarización")
+    # Coloca un título general a la figura
+
     plt.tight_layout()
+    # Ajusta el espaciado interno de la figura
+
     plt.show()
+    # Muestra la figura en pantalla
 
 
-def binarize_pixels(X: np.ndarray, threshold: int = 127,
-                    show_process: bool = False,
-                    sample_idx: int = 0,) -> np.ndarray:
+def binarize_pixels(
+    X: np.ndarray,
+    threshold: int = 127,
+    show_process: bool = False,
+) -> np.ndarray:
     """
     Binariza los píxeles usando un umbral.
 
     Si pixel >= threshold, devuelve 1.
     Si pixel < threshold, devuelve 0.
 
-    Además, si show_process=True, muestra una comparación visual entre la
-    imagen original y la binarizada para una muestra seleccionada.
-
     Args:
         X: Matriz original de píxeles con forma (N, 784).
         threshold: Umbral de binarización.
         show_process: Si es True, muestra comparación visual.
-        sample_idx: Índice de la muestra a visualizar.
 
     Returns:
         Matriz binaria con valores 0 o 1.
     """
-    # Matriz binaria donde cada píxel se convierte a 0 o 1 según el umbral
     X_bin = (X >= threshold).astype(np.uint8)
+    # Convierte cada píxel a 0 o 1 según el umbral
 
-    # Si se solicita, mostrar comparación visual
     if show_process:
+        # Si se solicita visualización, se muestran ejemplos
         show_binarization_samples(X, X_bin, num_samples=5)
 
     return X_bin
+    # Devuelve la matriz binarizada
 
 
-def labels_to_onehot(y: np.ndarray,
-                     num_classes: int = NUM_CLASSES,
-                     ) -> np.ndarray:
+def labels_to_onehot(
+    y: np.ndarray,
+    num_classes: int = NUM_CLASSES,
+) -> np.ndarray:
     """
     Convierte etiquetas escalares a codificación one-hot.
 
@@ -186,53 +222,60 @@ def labels_to_onehot(y: np.ndarray,
     Returns:
         Matriz one-hot con forma (N, num_classes).
     """
-    # Crea una matriz de ceros de tamaño N x num_classes
     onehot = np.zeros((y.shape[0], num_classes), dtype=np.uint8)
+    # Crea una matriz de ceros de tamaño N x num_classes
 
-    # En cada fila, coloca un 1 en la posición correspondiente a la etiqueta
     onehot[np.arange(y.shape[0]), y] = 1
+    # En cada fila activa el bit correspondiente a la etiqueta
 
-    # Devuelve la matriz codificada en one-hot
     return onehot
+    # Devuelve la matriz one-hot
 
 
-def concatenate_ff_input(X_bin: np.ndarray, y_onehot: np.ndarray,
-                         onehot_position: str = "prefix",) -> np.ndarray:
+def concatenate_ff_input(
+    X_bin: np.ndarray,
+    y_onehot: np.ndarray,
+    onehot_position: str = "prefix",
+) -> np.ndarray:
     """
     Concatena imagen binaria y etiqueta one-hot.
 
-    Estructura final:
-    [784 bits de imagen || 10 bits one-hot]
+    Estructuras válidas:
+        prefix: [10 bits one-hot || 784 bits imagen]
+        suffix: [784 bits imagen || 10 bits one-hot]
 
     Args:
         X_bin: Matriz binaria de imágenes.
         y_onehot: Matriz de etiquetas one-hot.
         onehot_position: Posición del one-hot en la entrada.
-            Valores válidos:
-                - "prefix"
-                - "suffix"
 
     Returns:
         Matriz concatenada con forma (N, 794).
     """
     if X_bin.shape[0] != y_onehot.shape[0]:
-        # Revisa que ambas matrices tengan el mismo número de muestras
+        # Revisa que ambas matrices tengan la misma cantidad de muestras
         raise ValueError(
-            "X_bin e y_onehot no tienen la misma cantidad de muestras.")
+            "X_bin e y_onehot no tienen la misma cantidad de muestras."
+        )
 
     if onehot_position not in {"prefix", "suffix"}:
+        # Verifica que la opción elegida sea válida
         raise ValueError(
             "onehot_position debe ser 'prefix' o 'suffix'."
         )
 
     if onehot_position == "prefix":
+        # Si el one-hot va primero, se concatena antes de la imagen
         return np.concatenate([y_onehot, X_bin], axis=1).astype(np.uint8)
 
-    # Une la imagen y la etiqueta codificada
-    return np.concatenate([y_onehot, X_bin], axis=1).astype(np.uint8)
+    return np.concatenate([X_bin, y_onehot], axis=1).astype(np.uint8)
+    # Si el one-hot va al final, la imagen va primero y la etiqueta después
 
 
-def pack_bits_row(row_bits: np.ndarray, pack_bits: int = 32) -> np.ndarray:
+def pack_bits_row(
+    row_bits: np.ndarray,
+    pack_bits: int = 32,
+) -> np.ndarray:
     """
     Empaqueta un vector binario en palabras de 32 bits.
 
@@ -255,24 +298,28 @@ def pack_bits_row(row_bits: np.ndarray, pack_bits: int = 32) -> np.ndarray:
 
     for i, bit in enumerate(row_bits):
         # Recorre cada bit del vector original
+
         if bit:
             # Solo escribe si el bit vale 1
+
             word_idx = i // pack_bits
             # Calcula en qué palabra cae el bit
 
             bit_idx = i % pack_bits
             # Calcula la posición del bit dentro de la palabra
 
-            packed[word_idx] |= (1 << bit_idx)
+            packed[word_idx] |= np.uint32(1 << bit_idx)
             # Activa ese bit en la palabra correspondiente
 
     return packed
     # Devuelve el vector empaquetado
 
 
-def pack_bits_matrix(X_bin: np.ndarray,
-                     total_bits: int,
-                     pack_bits: int = 32,) -> np.ndarray:
+def pack_bits_matrix(
+    X_bin: np.ndarray,
+    total_bits: int,
+    pack_bits: int = 32,
+) -> np.ndarray:
     """
     Empaqueta una matriz binaria fila por fila.
 
@@ -292,6 +339,7 @@ def pack_bits_matrix(X_bin: np.ndarray,
 
     for n in range(X_bin.shape[0]):
         # Recorre cada muestra
+
         packed[n] = pack_bits_row(X_bin[n], pack_bits=pack_bits)
         # Empaqueta la fila n y la guarda en la salida
 
@@ -299,44 +347,50 @@ def pack_bits_matrix(X_bin: np.ndarray,
     # Devuelve toda la matriz empaquetada
 
 
-def unpack_bits_row(packed_row: np.ndarray, total_bits: int,
-                    pack_bits: int = 32,) -> np.ndarray:
+def unpack_bits_row(
+    packed_row: np.ndarray,
+    total_bits: int,
+    pack_bits: int = 32,
+) -> np.ndarray:
     """
     Reconstruye el vector binario original a partir de palabras empaquetadas.
 
     Args:
         packed_row: Vector de palabras uint32.
         total_bits: Número de bits que se desean reconstruir.
-        pack_bits: Cantidad de bits por palabra (por defecto 32).
+        pack_bits: Cantidad de bits por palabra.
 
     Returns:
         Vector binario reconstruido (0/1).
     """
-
-    # Vector de salida
     bits = np.zeros(total_bits, dtype=np.uint8)
+    # Reserva el vector de salida
 
     for i in range(total_bits):
+        # Recorre cada bit a reconstruir
 
-        # Identifica la palabra donde está el bit
         word_idx = i // pack_bits
+        # Identifica la palabra donde está el bit
 
-        # Identifica la posición dentro de la palabra
         bit_idx = i % pack_bits
+        # Identifica la posición dentro de la palabra
 
-        # Extrae el bit
         bits[i] = (packed_row[word_idx] >> bit_idx) & 1
+        # Extrae el bit correspondiente
 
     return bits
+    # Devuelve el vector binario reconstruido
 
 
-def verify_bit_packing(X_original: np.ndarray, X_packed: np.ndarray,
-                       total_bits: int, pack_bits: int = 32,
-                       num_samples: int = 10,) -> None:
+def verify_bit_packing(
+    X_original: np.ndarray,
+    X_packed: np.ndarray,
+    total_bits: int,
+    pack_bits: int = 32,
+    num_samples: int = 10,
+) -> None:
     """
-    Verifica que el proceso pack → unpack conserva los bits originales.
-
-    Selecciona imágenes aleatorias y compara.
+    Verifica que el proceso pack -> unpack conserva los bits originales.
 
     Args:
         X_original: Matriz binaria original (N, bits).
@@ -345,39 +399,49 @@ def verify_bit_packing(X_original: np.ndarray, X_packed: np.ndarray,
         pack_bits: Tamaño de palabra.
         num_samples: Cantidad de muestras a verificar.
     """
-
     indices = np.random.choice(X_original.shape[0], num_samples, replace=False)
+    # Selecciona muestras aleatorias para probar la reversibilidad
 
     errors = 0
+    # Inicializa el contador de errores
 
     for idx in indices:
+        # Recorre cada índice de prueba
 
         reconstructed = unpack_bits_row(
             X_packed[idx],
             total_bits=total_bits,
             pack_bits=pack_bits,
         )
+        # Reconstruye la fila empaquetada
 
         if not np.array_equal(X_original[idx], reconstructed):
-
+            # Si la reconstrucción no coincide, se reporta error
             print(f"❌ Error en muestra {idx}")
             errors += 1
-
         else:
+            # Si coincide, se reporta éxito
             print(f"✔ Muestra {idx} correcta")
 
     if errors == 0:
+        # Si no hubo errores, se informa verificación exitosa
         print("Verificación exitosa: todos los vectores coinciden.")
     else:
+        # Si hubo errores, se informa cuántos se encontraron
         print(f"Se encontraron {errors} errores.")
 
 
-def save_packed_pixels_dataset(output_path: str,
-                               X_pix_packed: np.ndarray,
-                               y: np.ndarray,) -> None:
+def save_packed_pixels_dataset(
+    output_path: str,
+    X_pix_packed: np.ndarray,
+    y: np.ndarray,
+) -> None:
     """
     Guarda un archivo binario con esta estructura por muestra:
     [label: 1 byte][pixeles binarios empaquetados]
+
+    Esta función se mantiene por compatibilidad para el dataset de píxeles
+    separado, donde sí puede ser útil conservar la etiqueta escalar aparte.
 
     Args:
         output_path: Ruta del archivo binario de salida.
@@ -389,53 +453,64 @@ def save_packed_pixels_dataset(output_path: str,
 
     with open(output_path, "wb") as file:
         # Abre el archivo en modo binario de escritura
+
         for label, packed_words in zip(y, X_pix_packed):
             # Recorre cada etiqueta junto con su muestra empaquetada
-            file.write(struct.pack("B", int(label)))
-            # Escribe la etiqueta como 1 byte sin signo
 
-            file.write(packed_words.astype(np.uint32).tobytes())
-            # Escribe las palabras empaquetadas como bytes
+            file.write(np.uint8(label).tobytes())
+            # Escribe la etiqueta como un byte sin signo
+
+            file.write(np.asarray(packed_words, dtype="<u4").tobytes())
+            # Escribe las palabras empaquetadas en formato uint32 little-endian
 
     print(f"Guardado dataset binario de píxeles en: {output_path}")
+    # Informa la ruta de salida
 
 
-def save_packed_ff_dataset(output_path: str,
-                           X_ff_packed: np.ndarray,
-                           y: np.ndarray,) -> None:
+def save_packed_ff_dataset(
+    output_path: str,
+    X_ff_packed: np.ndarray,
+) -> None:
     """
-    Guarda un archivo binario con esta estructura por muestra:
-    [label: 1 byte][entrada FF empaquetada]
+    Guarda un archivo binario FF con esta estructura por muestra:
+
+    [25 words uint32]
+
+    Importante:
+    - Ya NO se escribe un byte extra con la etiqueta escalar.
+    - El one-hot ya viene embebido en los bits [0:9] de cada muestra.
+    - Esto evita el corrimiento de 8 bits que afectaba al hardware.
 
     Args:
         output_path: Ruta del archivo binario de salida.
-        X_ff_packed: Matriz FF empaquetada.
-        y: Vector de etiquetas.
+        X_ff_packed: Matriz FF empaquetada con forma (N, 25).
     """
     output_path = Path(output_path)
     # Convierte la ruta a objeto Path
 
     with open(output_path, "wb") as file:
         # Abre el archivo en modo binario de escritura
-        for label, packed_words in zip(y, X_ff_packed):
-            # Recorre cada etiqueta junto con su entrada FF empaquetada
-            file.write(struct.pack("B", int(label)))
-            # Escribe la etiqueta como 1 byte
 
-            file.write(packed_words.astype(np.uint32).tobytes())
-            # Escribe las palabras de la entrada FF como bytes
+        for packed_words in X_ff_packed:
+            # Recorre cada muestra empaquetada
+
+            file.write(np.asarray(packed_words, dtype="<u4").tobytes())
+            # Escribe directamente las 25 palabras uint32 en little-endian
 
     print(f"Guardado dataset FF empaquetado en: {output_path}")
+    # Informa que el archivo fue creado
 
 
-def save_numpy_debug(prefix: str,
-                     X: np.ndarray | None = None,
-                     y: np.ndarray | None = None,
-                     X_bin: np.ndarray | None = None,
-                     y_onehot: np.ndarray | None = None,
-                     X_ff: np.ndarray | None = None,
-                     X_pix_packed: np.ndarray | None = None,
-                     X_ff_packed: np.ndarray | None = None,) -> None:
+def save_numpy_debug(
+    prefix: str,
+    X: np.ndarray | None = None,
+    y: np.ndarray | None = None,
+    X_bin: np.ndarray | None = None,
+    y_onehot: np.ndarray | None = None,
+    X_ff: np.ndarray | None = None,
+    X_pix_packed: np.ndarray | None = None,
+    X_ff_packed: np.ndarray | None = None,
+) -> None:
     """
     Guarda archivos .npy para depuración intermedia.
 
@@ -453,38 +528,33 @@ def save_numpy_debug(prefix: str,
     # Convierte el prefijo a Path para construir nombres fácilmente
 
     if X is not None:
-        np.save(prefix.with_name(prefix.name + "_X.npy"),
-                X)
-        # Guarda la matriz original
+        # Si se proporcionó X, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_X.npy"), X)
 
     if y is not None:
-        np.save(prefix.with_name(prefix.name + "_y.npy"),
-                y)
-        # Guarda las etiquetas originales
+        # Si se proporcionó y, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_y.npy"), y)
 
     if X_bin is not None:
-        np.save(prefix.with_name(prefix.name + "_Xbin.npy"),
-                X_bin)
-        # Guarda la versión binarizada
+        # Si se proporcionó X_bin, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_Xbin.npy"), X_bin)
 
     if y_onehot is not None:
-        np.save(prefix.with_name(prefix.name + "_yonehot.npy"),
-                y_onehot)
-        # Guarda la versión one-hot
+        # Si se proporcionó y_onehot, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_yonehot.npy"), y_onehot)
 
     if X_ff is not None:
-        np.save(prefix.with_name(prefix.name + "_Xff.npy"),
-                X_ff)
-        # Guarda la entrada concatenada FF
+        # Si se proporcionó X_ff, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_Xff.npy"), X_ff)
 
     if X_pix_packed is not None:
+        # Si se proporcionó X_pix_packed, se guarda en disco
         np.save(prefix.with_name(prefix.name + "_Xpixpacked.npy"),
                 X_pix_packed)
-        # Guarda los píxeles empaquetados
 
     if X_ff_packed is not None:
-        np.save(prefix.with_name(prefix.name + "_Xffpacked.npy"),
-                X_ff_packed)
-        # Guarda la entrada FF empaquetada
+        # Si se proporcionó X_ff_packed, se guarda en disco
+        np.save(prefix.with_name(prefix.name + "_Xffpacked.npy"), X_ff_packed)
 
     print("Archivos .npy de depuración guardados.")
+    # Informa que el guardado de depuración terminó

@@ -1,59 +1,190 @@
-"""
-Este script:
-1. Carga el dataset MNIST desde un archivo CSV/TXT.
-2. Valida que tenga el formato esperado.
-3. Binariza los píxeles.
-4. Convierte las etiquetas a one-hot.
-5. Concatena imagen binaria + etiqueta one-hot.
-6. Empaqueta bits en palabras de 32 bits.
-7. Guarda archivos binarios listos para FPGA.
-8. Guarda archivos .npy para depuración.
-"""
 # =============================== Librerías ================================= #
-# import numpy as np                  # Cálculo numérico eficiente
+from pathlib import Path                     # Manejo limpio de rutas
+from mnist_binarize_onehot_pack import (     # Funciones del preprocesamiento
+    FF_INPUT_BITS,
+    FF_PACK_WORDS,
+    load_train_table,
+    validate_dataset,
+    binarize_pixels,
+    labels_to_onehot,
+    concatenate_ff_input,
+    pack_bits_matrix,
+    verify_bit_packing,
+    save_packed_ff_dataset,
+    save_numpy_debug,
+)
+from read_bin import (                       # Funciones de lectura y prueba
+    test_binary_dataset,
+    print_first_words,
+    inspect_sample_structure,
+)
 
-# =========================== Importar Funciones ============================ #
-# import mnist_binarize_onehot_pack as mnist_utils
-import read_bin
 
 # =========================== Variables globales ============================ #
-# Tamaño lateral de la imagen MNIST: 28x28
-IMG_SIZE = 28
+INPUT_CSV = "data/raw/train.csv"
+# Ruta del archivo CSV original de MNIST
 
-# Total de píxeles por imagen
-NUM_PIXELS = IMG_SIZE * IMG_SIZE
+OUTPUT_BIN = "data/processed/mnist_ff_input_packed.bin"
+# Ruta del archivo binario FF corregido
 
-# Número de clases en MNIST: dígitos del 0 al 9
-NUM_CLASSES = 10
+DEBUG_PREFIX = "data/processed/debug_mnist_ff"
+# Prefijo base para guardar archivos .npy de depuración
 
-# Entrada total para FF: 784 bits de imagen + 10 bits one-hot
-FF_INPUT_BITS = NUM_PIXELS + NUM_CLASSES
+BIN_THRESHOLD = 127
+# Umbral de binarización usado para convertir píxeles a 0/1
 
-# Cantidad de bits por palabra de empaquetado
-PACK_BITS = 32
-
-# Número de palabras de 32 bits necesarias para 784 bits
-PIX_PACK_WORDS = (NUM_PIXELS + PACK_BITS - 1) // PACK_BITS
-
-# Número de palabras de 32 bits necesarias para 794 bits
-FF_PACK_WORDS = (FF_INPUT_BITS + PACK_BITS - 1) // PACK_BITS
+ONEHOT_POSITION = "prefix"
+# Posición del one-hot en la entrada FF
+# Para este proyecto debe ser "prefix" para obtener:
+# [label_onehot || imagen_binaria]
 
 
-# ================================== Main =================================== #
+# =============================== Función main ============================== #
+def main() -> None:
+    """
+    Ejecuta el flujo completo de generación y validación del binario FF.
+    """
+    input_csv_path = Path(INPUT_CSV)
+    # Convierte la ruta de entrada a objeto Path
+
+    output_bin_path = Path(OUTPUT_BIN)
+    # Convierte la ruta de salida a objeto Path
+
+    print("===== ETAPA 1: CARGA DEL CSV =====")
+    # Indica el inicio de la carga del dataset original
+
+    X, y = load_train_table(str(input_csv_path))
+    # Carga imágenes y etiquetas desde el CSV
+
+    validate_dataset(X, y)
+    # Verifica forma y rangos del dataset
+
+    print("\n===== ETAPA 2: BINARIZACION =====")
+    # Indica el inicio del proceso de binarización
+
+    X_bin = binarize_pixels(
+        X=X,
+        threshold=BIN_THRESHOLD,
+        show_process=False,
+    )
+    # Convierte todos los píxeles a binario usando el umbral definido
+
+    print("Binarización completada.")
+    # Informa que la binarización terminó
+
+    print("\n===== ETAPA 3: ONE-HOT =====")
+    # Indica el inicio de la generación de etiquetas one-hot
+
+    y_onehot = labels_to_onehot(y)
+    # Convierte las etiquetas escalares a formato one-hot
+
+    print("Conversión one-hot completada.")
+    # Informa que la codificación one-hot terminó
+
+    print("\n===== ETAPA 4: CONCATENACION FF =====")
+    # Indica el inicio de la construcción de la entrada FF
+
+    X_ff = concatenate_ff_input(
+        X_bin=X_bin,
+        y_onehot=y_onehot,
+        onehot_position=ONEHOT_POSITION,
+    )
+    # Construye la entrada FF con estructura [one-hot || imagen]
+
+    print("Concatenación FF completada.")
+    # Informa que la entrada FF fue construida
+
+    print("Forma de X_ff:", X_ff.shape)
+    # Imprime la forma de la matriz FF
+
+    print("\n===== ETAPA 5: EMPAQUETADO =====")
+    # Indica el inicio del empaquetado en uint32
+
+    X_ff_packed = pack_bits_matrix(
+        X_bin=X_ff,
+        total_bits=FF_INPUT_BITS,
+        pack_bits=32,
+    )
+    # Empaqueta cada muestra FF en 25 palabras uint32
+
+    print("Empaquetado completado.")
+    # Informa que el empaquetado terminó
+
+    print("Forma de X_ff_packed:", X_ff_packed.shape)
+    # Imprime la forma de la matriz empaquetada
+
+    print("\n===== ETAPA 6: VERIFICACION PACK/UNPACK =====")
+    # Indica el inicio de la verificación de reversibilidad
+
+    verify_bit_packing(
+        X_original=X_ff,
+        X_packed=X_ff_packed,
+        total_bits=FF_INPUT_BITS,
+        pack_bits=32,
+        num_samples=10,
+    )
+    # Verifica que pack y unpack conserven la información
+
+    print("\n===== ETAPA 7: GUARDADO DEL BINARIO FF =====")
+    # Indica el inicio del guardado del binario final
+
+    save_packed_ff_dataset(
+        output_path=str(output_bin_path),
+        X_ff_packed=X_ff_packed,
+    )
+    # Guarda el nuevo binario sin byte extra de label
+
+    print("\n===== ETAPA 8: GUARDADO DE ARCHIVOS DEBUG =====")
+    # Indica el inicio del guardado de archivos auxiliares
+
+    save_numpy_debug(
+        prefix=DEBUG_PREFIX,
+        X=X,
+        y=y,
+        X_bin=X_bin,
+        y_onehot=y_onehot,
+        X_ff=X_ff,
+        X_ff_packed=X_ff_packed,
+    )
+    # Guarda matrices intermedias en formato .npy para depuración
+
+    print("\n===== ETAPA 9: RELECTURA DEL BINARIO =====")
+    # Indica el inicio de la prueba de lectura del binario generado
+
+    packed, X_reconstructed = test_binary_dataset(
+        file_path=str(output_bin_path),
+        packed_words=FF_PACK_WORDS,
+        total_bits=FF_INPUT_BITS,
+    )
+    # Vuelve a leer el binario recién creado y reconstruye sus bits
+
+    print("\n===== ETAPA 10: INSPECCION DE LA PRIMERA MUESTRA =====")
+    # Indica el inicio de la inspección estructural de la primera muestra
+
+    print_first_words(
+        packed_data=packed,
+        sample_idx=0,
+        num_words=FF_PACK_WORDS,
+    )
+    # Imprime las primeras 25 palabras de la muestra 0
+
+    inspect_sample_structure(
+        packed_data=packed,
+        sample_idx=0,
+    )
+    # Imprime label, imagen y padding de la muestra 0
+
+    print("\n===== ETAPA 11: VALIDACION FINAL =====")
+    # Indica el cierre del flujo de validación
+
+    print("Dimensión reconstruida:", X_reconstructed.shape)
+    # Imprime la dimensión del arreglo reconstruido
+
+    print("Proceso completado correctamente.")
+    # Mensaje final de éxito
+
+
+# ============================= Punto de entrada ============================ #
 if __name__ == "__main__":
-    input_path = "data/processed/mnist_ff_input_packed.bin"
-    sample_idx = 2
-
-    labels, packed = read_bin.load_packed_binary_dataset(input_path,
-                                                         FF_PACK_WORDS)
-
-    read_bin.print_full_sample(packed, sample_idx=sample_idx)
-
-    read_bin.print_first_words(packed, sample_idx=sample_idx)
-
-    read_bin.print_first_bits(packed, sample_idx=sample_idx)
-
-    labels, packed = read_bin.load_packed_binary_dataset(input_path,
-                                                         PIX_PACK_WORDS)
-
-    read_bin.inspect_sample_structure(packed, sample_idx=sample_idx)
+    # Ejecuta main solo si este archivo se lanza directamente
+    main()
