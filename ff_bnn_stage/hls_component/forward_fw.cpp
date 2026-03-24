@@ -3,9 +3,7 @@
 // ============================================================
 // LFSR de 16 bits
 // ============================================================
-
 lfsr_t lfsr16_next(lfsr_t state) {
-#pragma HLS INLINE
     // Se marca la función como INLINE para que HLS la integre dentro del datapath y no cree lógica separada.
 
     bool new_bit = state[0] ^ state[2] ^ state[3] ^ state[5];
@@ -24,9 +22,7 @@ lfsr_t lfsr16_next(lfsr_t state) {
 // ============================================================
 // Validación de one-hot
 // ============================================================
-
 bool is_valid_onehot(label_oh_t label_onehot) {
-#pragma HLS INLINE
     // Se fuerza inline para mantener la lógica simple dentro del kernel.
 
     ap_uint<4> count_ones = 0;
@@ -49,9 +45,7 @@ bool is_valid_onehot(label_oh_t label_onehot) {
 // ============================================================
 // one-hot -> índice
 // ============================================================
-
 label_idx_t decode_onehot(label_oh_t label_onehot) {
-#pragma HLS INLINE
     // Esta función también se integra inline.
 
     label_idx_t label_idx = 0;
@@ -76,7 +70,6 @@ label_idx_t decode_onehot(label_oh_t label_onehot) {
 // ============================================================
 
 label_oh_t encode_onehot(label_idx_t label_idx) {
-#pragma HLS INLINE
     // Se fuerza inline para que sea lógica combinacional simple.
 
     label_oh_t label_onehot = 0;
@@ -92,9 +85,7 @@ label_oh_t encode_onehot(label_idx_t label_idx) {
 // ============================================================
 // Generación de etiqueta negativa excluyente
 // ============================================================
-
 label_idx_t generate_negative_label(label_idx_t true_label, lfsr_t &state) {
-#pragma HLS INLINE
     // La función se integra inline para que forme parte del pipeline principal.
 
     state = lfsr16_next(state);
@@ -118,9 +109,7 @@ label_idx_t generate_negative_label(label_idx_t true_label, lfsr_t &state) {
 // ============================================================
 // Carga de una muestra desde 25 words de 32 bits
 // ============================================================
-
 raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
-#pragma HLS INLINE
     // Se integra inline para no crear sobrecosto de llamada.
 
     raw_sample_t sample = 0;
@@ -148,9 +137,7 @@ raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
 // ============================================================
 // Almacenamiento de una muestra en 25 words de 32 bits
 // ============================================================
-
 void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
-#pragma HLS INLINE
     // Se fuerza inline para simplificar el datapath.
 
     int base = sample_idx * WORDS_PER_SAMPLE;
@@ -172,14 +159,8 @@ void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
 //   pixels       = bits [793:10]
 //   padding      = bits [799:794]
 // ============================================================
-
-void unpack_sample(
-    raw_sample_t sample,
-    label_oh_t &label_onehot,
-    pixels_t &pixels,
-    padding_t &padding
-) {
-#pragma HLS INLINE
+void unpack_sample(raw_sample_t sample, label_oh_t &label_onehot,
+    pixels_t &pixels, padding_t &padding) {
     // La función se integra inline porque es una mera selección de rangos.
 
     label_onehot = sample.range(9, 0);
@@ -195,13 +176,8 @@ void unpack_sample(
 // ============================================================
 // Empaquetado de la muestra
 // ============================================================
-
-raw_sample_t pack_sample(
-    label_oh_t label_onehot,
-    pixels_t pixels,
-    padding_t padding
-) {
-#pragma HLS INLINE
+raw_sample_t pack_sample(label_oh_t label_onehot, pixels_t pixels,
+    padding_t padding) {
     // Se fuerza inline porque es una operación fija y pequeña.
 
     raw_sample_t sample = 0;
@@ -223,16 +199,9 @@ raw_sample_t pack_sample(
 // ============================================================
 // Top function sintetizable
 // ============================================================
-
-void forward_fw_top(
-    const word_t *in_mem,
-    word_t *pos_mem,
-    word_t *neg_mem,
-    label_idx_t *true_label_mem,
-    label_idx_t *neg_label_mem,
-    int n_samples,
-    uint16_t seed
-) {
+void forward_fw_top(const word_t *in_mem, word_t *pos_mem,
+    word_t *neg_mem, label_idx_t *true_label_mem, label_idx_t *neg_label_mem,
+    int n_samples, uint16_t seed) {
 #pragma HLS INTERFACE m_axi     port=in_mem         offset=slave bundle=gmem0
     // Puerto AXI maestro de lectura para la memoria de entrada.
 
