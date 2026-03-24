@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Messages>
+	<Message severity="INFO" prefix="[HLS 200-111]" key="HLS_111_966" tag="RUNTIME" content="Finished File checks and directory preparation: CPU user time: 3 seconds. CPU system time: 1 seconds. Elapsed time: 4.597 seconds; current allocated memory: 265.363 MB." resolution=""/>
+	<Message severity="INFO" prefix="[HLS 200-10]" key="HLS_10_1312" tag="" content="Analyzing design file &apos;debug_utils.cpp&apos; ..." resolution=""/>
+	<Message severity="INFO" prefix="[HLS 200-10]" key="HLS_10_1312" tag="" content="Analyzing design file &apos;forward_fw.cpp&apos; ..." resolution=""/>
+	<Message severity="WARNING" prefix="[HLS 200-1986]" key="HLS 200-1986" tag="" content="Could not apply TOP directive, invalid function, label, or variable (:0)" resolution=""/>
+	<Message severity="INFO" prefix="[HLS 200-111]" key="HLS_111_966" tag="RUNTIME" content="Finished Source Code Analysis and Preprocessing: CPU user time: 0 seconds. CPU system time: 1 seconds. Elapsed time: 13.894 seconds; current allocated memory: 268.855 MB." resolution=""/>
+	<Message severity="ERROR" prefix="[HLS 214-157]" key="HLS 214-157" tag="" content="Top function not found: there is no function named &apos;train_tb&apos;" resolution=""/>
+</Messages>

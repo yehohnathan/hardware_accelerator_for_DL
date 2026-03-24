@@ -1,9 +1,6 @@
 INFO: [SIM 2] *************** CSIM start ***************
 INFO: [SIM 4] CSIM will launch CLANG as the compiler.
-   Compiling ../../../../train_tb.cpp in debug mode
-   Compiling ../../../../debug_utils.cpp in debug mode
-   Compiling ../../../../forward_fw.cpp in debug mode
-   Generating csim.exe
+make: 'csim.exe' is up to date.
 
 ============================================================
 INFORMACION GENERAL DEL BINARIO

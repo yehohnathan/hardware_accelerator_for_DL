@@ -1,0 +1,112 @@
+---
+MainSourceFile:  'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_component/hls/.autopilot/db/debug_utils.pp.0.cpp'
+Diagnostics:     
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_676_1:  '
+    FileOffset:      676
+    FilePath:        'C:\Xilinx\Vitis\2024.2\common\technology\autopilot\etc\ap_int_ref.h'
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          892981
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_676_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_690_1:  '
+    FileOffset:      690
+    FilePath:        'C:\Xilinx\Vitis\2024.2\common\technology\autopilot\etc\ap_int_ref.h'
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          893447
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_690_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_704_1:  '
+    FileOffset:      704
+    FilePath:        'C:\Xilinx\Vitis\2024.2\common\technology\autopilot\etc\ap_int_ref.h'
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          893914
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_704_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_1248_1:  '
+    FileOffset:      1248
+    FilePath:        'C:\Xilinx\Vitis\2024.2\common\technology\autopilot\etc\ap_fixed_base.h'
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          1177272
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_1248_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_26_1:  '
+    FileOffset:      26
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2075139
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_26_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_60_1:  '
+    FileOffset:      60
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2075597
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_60_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_76_1:  '
+    FileOffset:      76
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2075849
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_76_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_93_1:  '
+    FileOffset:      93
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2076264
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_93_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_114_1:  '
+    FileOffset:      114
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2076568
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_114_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_130_1:  '
+    FileOffset:      130
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2076805
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_130_1: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_143_2:  '
+    FileOffset:      143
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2077069
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_143_2: '
+  - DiagnosticName:  xilinx-label-all-loops
+    Message:         'Added loop label VITIS_LOOP_323_1:  '
+    FileOffset:      323
+    FilePath:        debug_utils.cpp
+    Replacements:    
+      - FilePath:        'D:\TFG\hardware_accelerator_for_DL\ff_bnn_stage\hls_component\hls_component\hls\.autopilot\db\debug_utils.pp.0.cpp'
+        Offset:          2080025
+        Length:          0
+        ReplacementText: 'VITIS_LOOP_323_1: '
+...

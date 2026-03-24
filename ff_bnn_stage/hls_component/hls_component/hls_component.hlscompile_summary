@@ -1,0 +1,248 @@
+<ENTRY>
+{
+ "thisFile": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls_component.hlscompile_summary",
+ "connectId": "",
+ "serverToken": "",
+ "timestamp": "0"
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_CmdStep",
+ "dateTimestamp": "03/16/26 14:11:54",
+ "timestampMillis": "1773691914281",
+ "buildStep": {
+  "cmdId": "e4f89511-6a8a-4ece-98b4-057103709fe3",
+  "name": "v++",
+  "logFile": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\logs\\hls_component.steps.log",
+  "commandLine": "C:/Xilinx/Vitis/2024.2/bin/unwrapped/win64.o/v++.exe  -c --mode hls --config D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_config.cfg --work_dir hls_component ",
+  "args": [
+   "-c",
+   "--mode",
+   "hls",
+   "--config",
+   "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_config.cfg",
+   "--work_dir",
+   "hls_component"
+  ],
+  "iniFiles": [
+   {
+    "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_config.cfg",
+    "content": "part=xa7a100tcsg324-2I\n\n[hls]\nflow_target=vivado\npackage.output.format=ip_catalog\npackage.output.syn=false\ntb.file=train_tb.cpp\nsyn.top=train_tb\nsyn.file=forward_fw.cpp\nsyn.file=forward_fw.hpp\nsyn.file=debug_utils.cpp\nsyn.file=debug_utils.hpp"
+   }
+  ],
+  "cwd": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Status",
+ "dateTimestamp": "03/16/26 14:11:54",
+ "timestampMillis": "1773691914281",
+ "status": {
+  "cmdId": "e4f89511-6a8a-4ece-98b4-057103709fe3",
+  "state": "CS_RUNNING"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_FlowMetaData",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921714",
+ "buildSummary": {
+  "hardwarePlatform": "",
+  "hardwareDsa": "",
+  "platformDirectory": "",
+  "runtime": "",
+  "systemConfig": "",
+  "flow": "BF_COMPILE",
+  "target": "TT_HW",
+  "kernels": [
+   {
+    "base": {
+     "type": "KERNEL",
+     "name": "train_tb",
+     "file": "",
+     "reports": [],
+     "uuid": ""
+    },
+    "sources": [
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.cpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.hpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\debug_utils.cpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\debug_utils.hpp"
+    ],
+    "psSources": [],
+    "cuNames": [],
+    "type": "HLS",
+    "frequency": 0,
+    "freqUnits": ""
+   }
+  ],
+  "toolVersion": "2024.2"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_SubCmdStep",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921715",
+ "buildStep": {
+  "cmdId": "996d2172-2978-4b21-99dd-40dd8231bf45",
+  "name": "",
+  "logFile": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls\\hls.log",
+  "commandLine": "",
+  "args": [],
+  "iniFiles": [],
+  "cwd": "D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Status",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921716",
+ "status": {
+  "cmdId": "996d2172-2978-4b21-99dd-40dd8231bf45",
+  "state": "CS_RUNNING"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921716",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls\\hls_data.json",
+  "name": "",
+  "fileType": "JSON",
+  "reportType": "HLS_SYNTHESIS",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921716",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls\\syn\\report\\csynth.rpt",
+  "name": "",
+  "fileType": "TEXT",
+  "reportType": "HLS_SYNTHESIS",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:01",
+ "timestampMillis": "1773691921717",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls\\syn\\report\\csynth.xml",
+  "name": "",
+  "fileType": "XML",
+  "reportType": "HLS_SYNTHESIS",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:18",
+ "timestampMillis": "1773691938907",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls",
+  "name": "",
+  "fileType": "DIR",
+  "reportType": "HLS_DATAFLOW",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:18",
+ "timestampMillis": "1773691938908",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls",
+  "name": "",
+  "fileType": "DIR",
+  "reportType": "HLS_FUNCTION_CALL_GRAPH",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:18",
+ "timestampMillis": "1773691938908",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls",
+  "name": "",
+  "fileType": "DIR",
+  "reportType": "HLS_SCHEDULE",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Status",
+ "dateTimestamp": "03/16/26 14:12:18",
+ "timestampMillis": "1773691938909",
+ "status": {
+  "cmdId": "996d2172-2978-4b21-99dd-40dd8231bf45",
+  "state": "CS_PASSED"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Status",
+ "dateTimestamp": "03/16/26 14:12:19",
+ "timestampMillis": "1773691939081",
+ "status": {
+  "cmdId": "e4f89511-6a8a-4ece-98b4-057103709fe3",
+  "state": "CS_FAILED"
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:19",
+ "timestampMillis": "1773691939187",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\reports\\v++_compile_hls_component_guidance.html",
+  "name": "",
+  "fileType": "HTML",
+  "reportType": "GLOBAL_RULECHECK_GUIDANCE",
+  "cmdId": ""
+ }
+}
+</ENTRY>
+<ENTRY>
+{
+ "type": "ET_Report",
+ "dateTimestamp": "03/16/26 14:12:19",
+ "timestampMillis": "1773691939188",
+ "report": {
+  "path": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\reports\\.db\\v++_compile_hls_component_guidance.pb3",
+  "name": "",
+  "fileType": "BINARY_PROTOBUF",
+  "reportType": "GLOBAL_RULECHECK_GUIDANCE",
+  "cmdId": ""
+ }
+}
+</ENTRY>
