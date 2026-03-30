@@ -37,6 +37,41 @@ INFO: [HLS 200-2036] Building debug C Simulation binaries
    Compiling ../../../../forward_fw.cpp in debug mode
    Generating csim.exe
 In file included from ../../../../train_tb.cpp:1:
+In file included from ../../../../tb_stage_b.hpp:6:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../tb_stage_c.cpp:1:
+In file included from ../../../../tb_stage_c.hpp:6:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../tb_stage_b.cpp:1:
+In file included from ../../../../tb_stage_b.hpp:6:
 In file included from ../../../../forward_fw.hpp:4:
 In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
 In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
@@ -251,15 +286,21 @@ true_label(first)     = 1
 neg_label(first)      = 3
 neg_differs_from_true = true
 total_collisions      = 0
+stage_b_validation_ok = true
+
+============================================================
+RESUMEN GLOBAL DE MODULOS
+============================================================
+stage_b_ok     = true
 
 ============================================================
 RESULTADOS DE ENTRENAMIENTO DE ETAPA C
 ============================================================
-train_samples   = 4096
-eval_samples    = 4096
-epochs          = 20
-correct_count   = 409
-train_accuracy  = 0.0998535
+train_samples   = 512
+eval_samples    = 512
+epochs          = 5
+correct_count   = 58
+train_accuracy  = 0.113281
 
 ============================================================
 VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
@@ -307,8 +348,8 @@ RESUMEN DEL MODELO ENTRENADO
 total_weights = 50816
 min_weight    = -0.25
 max_weight    = 2.5
-positive_w    = 45531
-negative_w    = 5285
+positive_w    = 43289
+negative_w    = 7527
 zero_w        = 0
 bias_count    = 64
 first_weights = 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 -0.25 0.25 -0.25 -0.25 -0.25 -0.25 0.25 0.25 0.25 -0.25 0.25 0.25 -0.25 -0.25 
@@ -537,5 +578,5 @@ FIN DEL TESTBENCH
 ============================================================
 INFO: [SIM 211-1] CSim done with 0 errors.
 INFO: [SIM 211-3] *************** CSIM finish ***************
-INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 2 seconds. Total elapsed time: 2210.84 seconds; peak allocated memory: 264.680 MB.
-INFO: [vitis-run 60-791] Total elapsed time: 0h 36m 55s
+INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 2 seconds. Total elapsed time: 113.411 seconds; peak allocated memory: 264.988 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 1m 58s

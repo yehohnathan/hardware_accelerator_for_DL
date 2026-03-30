@@ -172,15 +172,21 @@ true_label(first)     = 1
 neg_label(first)      = 3
 neg_differs_from_true = true
 total_collisions      = 0
+stage_b_validation_ok = true
+
+============================================================
+RESUMEN GLOBAL DE MODULOS
+============================================================
+stage_b_ok     = true
 
 ============================================================
 RESULTADOS DE ENTRENAMIENTO DE ETAPA C
 ============================================================
-train_samples   = 4096
-eval_samples    = 4096
-epochs          = 20
-correct_count   = 409
-train_accuracy  = 0.0998535
+train_samples   = 512
+eval_samples    = 512
+epochs          = 5
+correct_count   = 58
+train_accuracy  = 0.113281
 
 ============================================================
 VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
@@ -228,8 +234,8 @@ RESUMEN DEL MODELO ENTRENADO
 total_weights = 50816
 min_weight    = -0.25
 max_weight    = 2.5
-positive_w    = 45531
-negative_w    = 5285
+positive_w    = 43289
+negative_w    = 7527
 zero_w        = 0
 bias_count    = 64
 first_weights = 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 -0.25 0.25 -0.25 -0.25 -0.25 -0.25 0.25 0.25 0.25 -0.25 0.25 0.25 -0.25 -0.25 
