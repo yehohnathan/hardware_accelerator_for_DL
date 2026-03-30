@@ -1,13 +1,19 @@
 INFO: [SIM 2] *************** CSIM start ***************
 INFO: [SIM 4] CSIM will launch CLANG as the compiler.
-make: 'csim.exe' is up to date.
+   Compiling ../../../../train_tb.cpp in debug mode
+   Compiling ../../../../tb_stage_c.cpp in debug mode
+   Compiling ../../../../tb_stage_b.cpp in debug mode
+   Compiling ../../../../debug_utils.cpp in debug mode
+   Compiling ../../../../forward_fw.cpp in debug mode
+   Generating csim.exe
 
 ============================================================
 INFORMACION GENERAL DEL BINARIO
 ============================================================
-total_words   = 1050000
-words/sample  = 25
-total_samples = 42000
+file_path      = D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/mnist/data/processed/mnist_ff_input_packed.bin
+total_words    = 1050000
+words/sample   = 25
+total_samples  = 42000
 
 ============================================================
 PRIMERA MUESTRA ORIGINAL EN HEX
@@ -157,7 +163,7 @@ pixels preview [0..783] =
 0000000000000000000000000000
 
 ============================================================
-VERIFICACIONES DE CONSISTENCIA
+VERIFICACIONES DE CONSISTENCIA DE ETAPA B
 ============================================================
 positive_equals_input = true
 negative_same_pixels  = true
@@ -165,12 +171,69 @@ negative_same_padding = true
 true_label(first)     = 1
 neg_label(first)      = 3
 neg_differs_from_true = true
+total_collisions      = 0
 
 ============================================================
-VALIDACION GLOBAL DE ETIQUETAS NEGATIVAS
+RESULTADOS DE ENTRENAMIENTO DE ETAPA C
 ============================================================
-total_collisions = 0
-OK: ninguna etiqueta negativa coincide con su etiqueta verdadera.
+train_samples   = 4096
+eval_samples    = 4096
+epochs          = 20
+correct_count   = 409
+train_accuracy  = 0.0998535
+
+============================================================
+VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
+============================================================
+sample[0] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[1] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[2] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[3] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[4] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[5] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[6] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[7] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[8] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[9] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[10] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[11] g_pos=31.9998 g_neg=31.9998 gap=0
+
+============================================================
+VISTA PREVIA DE PREDICCIONES
+============================================================
+sample[0] true=1 pred=0 hit=false
+sample[1] true=0 pred=0 hit=true
+sample[2] true=1 pred=0 hit=false
+sample[3] true=4 pred=0 hit=false
+sample[4] true=0 pred=0 hit=true
+sample[5] true=0 pred=0 hit=true
+sample[6] true=7 pred=0 hit=false
+sample[7] true=3 pred=0 hit=false
+sample[8] true=5 pred=0 hit=false
+sample[9] true=3 pred=0 hit=false
+sample[10] true=8 pred=0 hit=false
+sample[11] true=9 pred=0 hit=false
+sample[12] true=1 pred=0 hit=false
+sample[13] true=3 pred=0 hit=false
+sample[14] true=3 pred=0 hit=false
+sample[15] true=1 pred=0 hit=false
+sample[16] true=2 pred=0 hit=false
+sample[17] true=0 pred=0 hit=true
+sample[18] true=7 pred=0 hit=false
+sample[19] true=5 pred=0 hit=false
+
+============================================================
+RESUMEN DEL MODELO ENTRENADO
+============================================================
+total_weights = 50816
+min_weight    = -0.25
+max_weight    = 2.5
+positive_w    = 45531
+negative_w    = 5285
+zero_w        = 0
+bias_count    = 64
+first_weights = 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 -0.25 0.25 -0.25 -0.25 -0.25 -0.25 0.25 0.25 0.25 -0.25 0.25 0.25 -0.25 -0.25 
+first_biases  = 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
 
 ============================================================
 NUEVOS SAMPLES PARA TEST

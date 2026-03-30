@@ -10,6 +10,14 @@ INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.cpp' from D:/TFG/hardwar
 INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.cpp' to the project
 INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(12)
 INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_b.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(13)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_b.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_b.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(14)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_b.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_c.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(15)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_c.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_c.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(16)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_c.hpp' to the project
 INFO: [HLS 200-1465] Applying ini 'tb.file=train_tb.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(7)
 INFO: [HLS 200-10] Adding test bench file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/train_tb.cpp' to the project
 INFO: [HLS 200-1465] Applying ini 'syn.top=train_tb' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(8)
@@ -22,14 +30,69 @@ INFO: [HLS 200-1465] Applying ini 'package.output.format=ip_catalog' from D:/TFG
 INFO: [SIM 211-2] *************** CSIM start ***************
 INFO: [SIM 211-4] CSIM will launch CLANG as the compiler.
 INFO: [HLS 200-2036] Building debug C Simulation binaries
-make: 'csim.exe' is up to date.
+   Compiling ../../../../train_tb.cpp in debug mode
+   Compiling ../../../../tb_stage_c.cpp in debug mode
+   Compiling ../../../../tb_stage_b.cpp in debug mode
+   Compiling ../../../../debug_utils.cpp in debug mode
+   Compiling ../../../../forward_fw.cpp in debug mode
+   Generating csim.exe
+In file included from ../../../../train_tb.cpp:1:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../debug_utils.cpp:1:
+In file included from ../../../../debug_utils.hpp:6:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../forward_fw.cpp:1:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
 
 ============================================================
 INFORMACION GENERAL DEL BINARIO
 ============================================================
-total_words   = 1050000
-words/sample  = 25
-total_samples = 42000
+file_path      = D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/mnist/data/processed/mnist_ff_input_packed.bin
+total_words    = 1050000
+words/sample   = 25
+total_samples  = 42000
 
 ============================================================
 PRIMERA MUESTRA ORIGINAL EN HEX
@@ -179,7 +242,7 @@ pixels preview [0..783] =
 0000000000000000000000000000
 
 ============================================================
-VERIFICACIONES DE CONSISTENCIA
+VERIFICACIONES DE CONSISTENCIA DE ETAPA B
 ============================================================
 positive_equals_input = true
 negative_same_pixels  = true
@@ -187,12 +250,69 @@ negative_same_padding = true
 true_label(first)     = 1
 neg_label(first)      = 3
 neg_differs_from_true = true
+total_collisions      = 0
 
 ============================================================
-VALIDACION GLOBAL DE ETIQUETAS NEGATIVAS
+RESULTADOS DE ENTRENAMIENTO DE ETAPA C
 ============================================================
-total_collisions = 0
-OK: ninguna etiqueta negativa coincide con su etiqueta verdadera.
+train_samples   = 4096
+eval_samples    = 4096
+epochs          = 20
+correct_count   = 409
+train_accuracy  = 0.0998535
+
+============================================================
+VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
+============================================================
+sample[0] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[1] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[2] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[3] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[4] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[5] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[6] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[7] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[8] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[9] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[10] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[11] g_pos=31.9998 g_neg=31.9998 gap=0
+
+============================================================
+VISTA PREVIA DE PREDICCIONES
+============================================================
+sample[0] true=1 pred=0 hit=false
+sample[1] true=0 pred=0 hit=true
+sample[2] true=1 pred=0 hit=false
+sample[3] true=4 pred=0 hit=false
+sample[4] true=0 pred=0 hit=true
+sample[5] true=0 pred=0 hit=true
+sample[6] true=7 pred=0 hit=false
+sample[7] true=3 pred=0 hit=false
+sample[8] true=5 pred=0 hit=false
+sample[9] true=3 pred=0 hit=false
+sample[10] true=8 pred=0 hit=false
+sample[11] true=9 pred=0 hit=false
+sample[12] true=1 pred=0 hit=false
+sample[13] true=3 pred=0 hit=false
+sample[14] true=3 pred=0 hit=false
+sample[15] true=1 pred=0 hit=false
+sample[16] true=2 pred=0 hit=false
+sample[17] true=0 pred=0 hit=true
+sample[18] true=7 pred=0 hit=false
+sample[19] true=5 pred=0 hit=false
+
+============================================================
+RESUMEN DEL MODELO ENTRENADO
+============================================================
+total_weights = 50816
+min_weight    = -0.25
+max_weight    = 2.5
+positive_w    = 45531
+negative_w    = 5285
+zero_w        = 0
+bias_count    = 64
+first_weights = 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 -0.25 0.25 -0.25 -0.25 -0.25 -0.25 0.25 0.25 0.25 -0.25 0.25 0.25 -0.25 -0.25 
+first_biases  = 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
 
 ============================================================
 NUEVOS SAMPLES PARA TEST
@@ -417,5 +537,5 @@ FIN DEL TESTBENCH
 ============================================================
 INFO: [SIM 211-1] CSim done with 0 errors.
 INFO: [SIM 211-3] *************** CSIM finish ***************
-INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 1 seconds. Total elapsed time: 6.875 seconds; peak allocated memory: 264.609 MB.
-INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 12s
+INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 2 seconds. Total elapsed time: 2210.84 seconds; peak allocated memory: 264.680 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 36m 55s

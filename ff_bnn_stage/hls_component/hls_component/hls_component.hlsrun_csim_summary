@@ -9,10 +9,10 @@
 <ENTRY>
 {
  "type": "ET_CmdStep",
- "dateTimestamp": "03/16/26 14:11:18",
- "timestampMillis": "1773691878398",
+ "dateTimestamp": "03/30/26 10:34:30",
+ "timestampMillis": "1774888470650",
  "buildStep": {
-  "cmdId": "7cfc92fd-62a4-4cf5-b57c-a73f71fa377e",
+  "cmdId": "5d28bd19-dc4d-4c7c-be54-8cf1156b15d8",
   "name": "vitis-run",
   "logFile": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\logs\\hls_component.steps.log",
   "commandLine": "C:/Xilinx/Vitis/2024.2/bin/unwrapped/win64.o/vitis-run.exe  --mode hls --csim --config D:\\TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_config.cfg --work_dir hls_component ",
@@ -33,10 +33,10 @@
 <ENTRY>
 {
  "type": "ET_Status",
- "dateTimestamp": "03/16/26 14:11:18",
- "timestampMillis": "1773691878398",
+ "dateTimestamp": "03/30/26 10:34:30",
+ "timestampMillis": "1774888470650",
  "status": {
-  "cmdId": "7cfc92fd-62a4-4cf5-b57c-a73f71fa377e",
+  "cmdId": "5d28bd19-dc4d-4c7c-be54-8cf1156b15d8",
   "state": "CS_RUNNING"
  }
 }
@@ -44,8 +44,8 @@
 <ENTRY>
 {
  "type": "ET_FlowMetaData",
- "dateTimestamp": "03/16/26 14:11:24",
- "timestampMillis": "1773691884575",
+ "dateTimestamp": "03/30/26 10:34:36",
+ "timestampMillis": "1774888476520",
  "buildSummary": {
   "hardwarePlatform": "",
   "hardwareDsa": "",
@@ -67,7 +67,11 @@
      "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.cpp",
      "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\forward_fw.hpp",
      "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\debug_utils.cpp",
-     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\debug_utils.hpp"
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\debug_utils.hpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\tb_stage_b.cpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\tb_stage_b.hpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\tb_stage_c.cpp",
+     "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\tb_stage_c.hpp"
     ],
     "psSources": [],
     "cuNames": [],
@@ -83,10 +87,10 @@
 <ENTRY>
 {
  "type": "ET_SubCmdStep",
- "dateTimestamp": "03/16/26 14:11:24",
- "timestampMillis": "1773691884576",
+ "dateTimestamp": "03/30/26 10:34:36",
+ "timestampMillis": "1774888476521",
  "buildStep": {
-  "cmdId": "b5a26eb6-c68f-4ffc-a43f-e5482a10c3a2",
+  "cmdId": "ea07f0e8-e247-43cd-a3f2-539226be295e",
   "name": "",
   "logFile": "D:/TFG\\hardware_accelerator_for_DL\\ff_bnn_stage\\hls_component\\hls_component\\hls\\hls.log",
   "commandLine": "",
@@ -99,10 +103,10 @@
 <ENTRY>
 {
  "type": "ET_Status",
- "dateTimestamp": "03/16/26 14:11:24",
- "timestampMillis": "1773691884577",
+ "dateTimestamp": "03/30/26 10:34:36",
+ "timestampMillis": "1774888476521",
  "status": {
-  "cmdId": "b5a26eb6-c68f-4ffc-a43f-e5482a10c3a2",
+  "cmdId": "ea07f0e8-e247-43cd-a3f2-539226be295e",
   "state": "CS_RUNNING"
  }
 }
@@ -110,10 +114,10 @@
 <ENTRY>
 {
  "type": "ET_Status",
- "dateTimestamp": "03/16/26 14:11:27",
- "timestampMillis": "1773691887748",
+ "dateTimestamp": "03/30/26 11:11:23",
+ "timestampMillis": "1774890683862",
  "status": {
-  "cmdId": "b5a26eb6-c68f-4ffc-a43f-e5482a10c3a2",
+  "cmdId": "ea07f0e8-e247-43cd-a3f2-539226be295e",
   "state": "CS_PASSED"
  }
 }
@@ -121,10 +125,10 @@
 <ENTRY>
 {
  "type": "ET_Status",
- "dateTimestamp": "03/16/26 14:11:27",
- "timestampMillis": "1773691887924",
+ "dateTimestamp": "03/30/26 11:11:24",
+ "timestampMillis": "1774890684052",
  "status": {
-  "cmdId": "7cfc92fd-62a4-4cf5-b57c-a73f71fa377e",
+  "cmdId": "5d28bd19-dc4d-4c7c-be54-8cf1156b15d8",
   "state": "CS_PASSED"
  }
 }
@@ -132,8 +136,8 @@
 <ENTRY>
 {
  "type": "ET_Report",
- "dateTimestamp": "03/16/26 14:11:27",
- "timestampMillis": "1773691887924",
+ "dateTimestamp": "03/30/26 11:11:24",
+ "timestampMillis": "1774890684053",
  "report": {
   "path": "",
   "name": "",
@@ -146,8 +150,8 @@
 <ENTRY>
 {
  "type": "ET_Report",
- "dateTimestamp": "03/16/26 14:11:27",
- "timestampMillis": "1773691887924",
+ "dateTimestamp": "03/30/26 11:11:24",
+ "timestampMillis": "1774890684053",
  "report": {
   "path": "",
   "name": "",
