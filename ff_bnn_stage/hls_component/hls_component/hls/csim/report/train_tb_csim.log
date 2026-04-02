@@ -1,10 +1,6 @@
 INFO: [SIM 2] *************** CSIM start ***************
 INFO: [SIM 4] CSIM will launch CLANG as the compiler.
    Compiling ../../../../train_tb.cpp in debug mode
-   Compiling ../../../../tb_stage_c.cpp in debug mode
-   Compiling ../../../../tb_stage_b.cpp in debug mode
-   Compiling ../../../../debug_utils.cpp in debug mode
-   Compiling ../../../../forward_fw.cpp in debug mode
    Generating csim.exe
 
 ============================================================
@@ -180,284 +176,519 @@ RESUMEN GLOBAL DE MODULOS
 stage_b_ok     = true
 
 ============================================================
+CONFIGURACION DE ETAPA C
+============================================================
+train_start       = 0
+train_samples     = 5000
+eval_start        = 41872
+eval_samples      = 128
+eval_reuses_train = false
+epochs            = 30
+train_batches     = 79
+architecture      = 794 -> 64 -> 32
+score_rule        = g1 + g2
+batch_size        = 64
+eval_hypotheses   = 1280
+label_scale       = 3
+threshold         = 512
+learning_rate     = 0.02
+
+============================================================
+ACTUALIZACION POR EPOCA
+============================================================
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 1/30
+Val accuracy: 0.398438
+Loss pos: 25.2241
+Loss neg: 6.00708
+Goodness pos: 1186.17
+Goodness neg: 1180.24
+Goodness gap: 5.93506
+Tiempo: 813.07 s
+epoch_delta[1] changed_w=35860 sign_flip_w=10866 max_abs_dw=2.5625 changed_b=96 sign_flip_b=0 max_abs_db=7.8797
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 2/30
+Val accuracy: 0.296875
+Loss pos: 25.8171
+Loss neg: 4.92773
+Goodness pos: 519.912
+Goodness neg: 513.438
+Goodness gap: 6.47357
+Tiempo: 811.532 s
+epoch_delta[2] changed_w=8235 sign_flip_w=1090 max_abs_dw=2.90044 changed_b=19 sign_flip_b=2 max_abs_db=6.46255
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 3/30
+Val accuracy: 0.3125
+Loss pos: 25.374
+Loss neg: 5.16016
+Goodness pos: 530.809
+Goodness neg: 521.735
+Goodness gap: 9.07355
+Tiempo: 812.729 s
+epoch_delta[3] changed_w=8756 sign_flip_w=835 max_abs_dw=5 changed_b=19 sign_flip_b=1 max_abs_db=5.23605
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 4/30
+Val accuracy: 0.289062
+Loss pos: 25.6594
+Loss neg: 4.65869
+Goodness pos: 466.693
+Goodness neg: 455.524
+Goodness gap: 11.1693
+Tiempo: 808.254 s
+epoch_delta[4] changed_w=8852 sign_flip_w=636 max_abs_dw=2.66681 changed_b=16 sign_flip_b=0 max_abs_db=4.93677
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 5/30
+Val accuracy: 0.265625
+Loss pos: 25.6062
+Loss neg: 4.61523
+Goodness pos: 467.731
+Goodness neg: 455.681
+Goodness gap: 12.0502
+Tiempo: 809.113 s
+epoch_delta[5] changed_w=8833 sign_flip_w=637 max_abs_dw=2.35936 changed_b=16 sign_flip_b=0 max_abs_db=1.19437
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 6/30
+Val accuracy: 0.34375
+Loss pos: 25.3923
+Loss neg: 4.71509
+Goodness pos: 472.277
+Goodness neg: 459.764
+Goodness gap: 12.5132
+Tiempo: 813.497 s
+epoch_delta[6] changed_w=8878 sign_flip_w=543 max_abs_dw=2.32451 changed_b=16 sign_flip_b=0 max_abs_db=0.830521
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 7/30
+Val accuracy: 0.328125
+Loss pos: 25.5435
+Loss neg: 4.4939
+Goodness pos: 467.783
+Goodness neg: 455.403
+Goodness gap: 12.3799
+Tiempo: 813.807 s
+epoch_delta[7] changed_w=8901 sign_flip_w=402 max_abs_dw=1.77481 changed_b=16 sign_flip_b=0 max_abs_db=0.830521
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 8/30
+Val accuracy: 0.351562
+Loss pos: 25.3635
+Loss neg: 4.56836
+Goodness pos: 470.475
+Goodness neg: 458.041
+Goodness gap: 12.4343
+Tiempo: 811.037 s
+epoch_delta[8] changed_w=8792 sign_flip_w=280 max_abs_dw=1.38612 changed_b=15 sign_flip_b=0 max_abs_db=0.628326
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 9/30
+Val accuracy: 0.34375
+Loss pos: 25.4529
+Loss neg: 4.47266
+Goodness pos: 468.594
+Goodness neg: 456.317
+Goodness gap: 12.2772
+Tiempo: 812.524 s
+epoch_delta[9] changed_w=8905 sign_flip_w=274 max_abs_dw=1.3132 changed_b=15 sign_flip_b=0 max_abs_db=0.628326
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 10/30
+Val accuracy: 0.34375
+Loss pos: 25.3325
+Loss neg: 4.55225
+Goodness pos: 470.543
+Goodness neg: 458.233
+Goodness gap: 12.3107
+Tiempo: 814.226 s
+epoch_delta[10] changed_w=8601 sign_flip_w=179 max_abs_dw=1.65793 changed_b=2 sign_flip_b=0 max_abs_db=0.0098114
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 11/30
+Val accuracy: 0.351562
+Loss pos: 25.3518
+Loss neg: 4.521
+Goodness pos: 469.908
+Goodness neg: 457.429
+Goodness gap: 12.4786
+Tiempo: 813.792 s
+epoch_delta[11] changed_w=9185 sign_flip_w=228 max_abs_dw=1.53085 changed_b=16 sign_flip_b=1 max_abs_db=0.863724
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 12/30
+Val accuracy: 0.359375
+Loss pos: 25.3904
+Loss neg: 4.40918
+Goodness pos: 468.5
+Goodness neg: 455.436
+Goodness gap: 13.0645
+Tiempo: 821.578 s
+epoch_delta[12] changed_w=9128 sign_flip_w=222 max_abs_dw=2.4583 changed_b=16 sign_flip_b=0 max_abs_db=2.20686
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 13/30
+Val accuracy: 0.351562
+Loss pos: 25.2966
+Loss neg: 4.50537
+Goodness pos: 470.82
+Goodness neg: 457.642
+Goodness gap: 13.1786
+Tiempo: 807.669 s
+epoch_delta[13] changed_w=8804 sign_flip_w=157 max_abs_dw=1.24173 changed_b=7 sign_flip_b=0 max_abs_db=3.03835
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 14/30
+Val accuracy: 0.375
+Loss pos: 25.1946
+Loss neg: 4.54224
+Goodness pos: 472.315
+Goodness neg: 459.107
+Goodness gap: 13.2075
+Tiempo: 808.337 s
+epoch_delta[14] changed_w=9140 sign_flip_w=167 max_abs_dw=1.2442 changed_b=16 sign_flip_b=0 max_abs_db=2.22321
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 15/30
+Val accuracy: 0.328125
+Loss pos: 25.2444
+Loss neg: 4.42383
+Goodness pos: 470.591
+Goodness neg: 457.36
+Goodness gap: 13.2307
+Tiempo: 804.265 s
+epoch_delta[15] changed_w=9081 sign_flip_w=119 max_abs_dw=1.50154 changed_b=16 sign_flip_b=0 max_abs_db=0.692688
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 16/30
+Val accuracy: 0.351562
+Loss pos: 25.1802
+Loss neg: 4.50757
+Goodness pos: 472.13
+Goodness neg: 458.789
+Goodness gap: 13.3409
+Tiempo: 806.287 s
+epoch_delta[16] changed_w=9025 sign_flip_w=89 max_abs_dw=0.745682 changed_b=15 sign_flip_b=0 max_abs_db=0.346008
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 17/30
+Val accuracy: 0.335938
+Loss pos: 25.2297
+Loss neg: 4.41064
+Goodness pos: 470.666
+Goodness neg: 457.317
+Goodness gap: 13.3494
+Tiempo: 826.422 s
+epoch_delta[17] changed_w=8920 sign_flip_w=89 max_abs_dw=0.697693 changed_b=15 sign_flip_b=0 max_abs_db=0.346008
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 18/30
+Val accuracy: 0.335938
+Loss pos: 25.189
+Loss neg: 4.44678
+Goodness pos: 471.365
+Goodness neg: 458.047
+Goodness gap: 13.3176
+Tiempo: 842.457 s
+epoch_delta[18] changed_w=8757 sign_flip_w=72 max_abs_dw=0.594681 changed_b=8 sign_flip_b=0 max_abs_db=0.0833588
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 19/30
+Val accuracy: 0.359375
+Loss pos: 25.1582
+Loss neg: 4.43018
+Goodness pos: 471.364
+Goodness neg: 457.979
+Goodness gap: 13.3851
+Tiempo: 840.8 s
+epoch_delta[19] changed_w=8760 sign_flip_w=55 max_abs_dw=0.719452 changed_b=15 sign_flip_b=0 max_abs_db=0.293793
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 20/30
+Val accuracy: 0.335938
+Loss pos: 25.196
+Loss neg: 4.3689
+Goodness pos: 470.779
+Goodness neg: 457.444
+Goodness gap: 13.3354
+Tiempo: 839.184 s
+epoch_delta[20] changed_w=8777 sign_flip_w=62 max_abs_dw=0.58989 changed_b=15 sign_flip_b=0 max_abs_db=0.241714
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 21/30
+Val accuracy: 0.328125
+Loss pos: 25.1687
+Loss neg: 4.36401
+Goodness pos: 470.894
+Goodness neg: 457.543
+Goodness gap: 13.3514
+Tiempo: 825.355 s
+epoch_delta[21] changed_w=8912 sign_flip_w=68 max_abs_dw=0.837372 changed_b=10 sign_flip_b=0 max_abs_db=0.249634
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 22/30
+Val accuracy: 0.328125
+Loss pos: 25.1106
+Loss neg: 4.4375
+Goodness pos: 471.883
+Goodness neg: 458.505
+Goodness gap: 13.3777
+Tiempo: 862.676 s
+epoch_delta[22] changed_w=9021 sign_flip_w=69 max_abs_dw=0.765488 changed_b=15 sign_flip_b=0 max_abs_db=0.367905
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 23/30
+Val accuracy: 0.382812
+Loss pos: 25.1809
+Loss neg: 4.35669
+Goodness pos: 470.71
+Goodness neg: 457.273
+Goodness gap: 13.4371
+Tiempo: 839.685 s
+epoch_delta[23] changed_w=8879 sign_flip_w=47 max_abs_dw=0.706161 changed_b=15 sign_flip_b=0 max_abs_db=0.0522308
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 24/30
+Val accuracy: 0.382812
+Loss pos: 25.1931
+Loss neg: 4.37354
+Goodness pos: 471.069
+Goodness neg: 457.539
+Goodness gap: 13.53
+Tiempo: 8074.91 s
+epoch_delta[24] changed_w=9565 sign_flip_w=182 max_abs_dw=1.71213 changed_b=15 sign_flip_b=0 max_abs_db=0.407913
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 25/30
+Val accuracy: 0.46875
+Loss pos: 25.0872
+Loss neg: 4.45386
+Goodness pos: 472.922
+Goodness neg: 459.402
+Goodness gap: 13.5195
+Tiempo: 753.325 s
+epoch_delta[25] changed_w=9427 sign_flip_w=164 max_abs_dw=1.17055 changed_b=11 sign_flip_b=0 max_abs_db=0.964127
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 26/30
+Val accuracy: 0.46875
+Loss pos: 25.0986
+Loss neg: 4.42871
+Goodness pos: 473.415
+Goodness neg: 459.425
+Goodness gap: 13.9897
+Tiempo: 738.003 s
+epoch_delta[26] changed_w=9221 sign_flip_w=124 max_abs_dw=1.36792 changed_b=15 sign_flip_b=0 max_abs_db=1.79544
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 27/30
+Val accuracy: 0.445312
+Loss pos: 25.0803
+Loss neg: 4.41846
+Goodness pos: 473.14
+Goodness neg: 459.057
+Goodness gap: 14.0832
+Tiempo: 740.445 s
+epoch_delta[27] changed_w=9455 sign_flip_w=125 max_abs_dw=1.2104 changed_b=15 sign_flip_b=0 max_abs_db=3.15369
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 28/30
+Val accuracy: 0.460938
+Loss pos: 25.0198
+Loss neg: 4.42871
+Goodness pos: 473.642
+Goodness neg: 459.544
+Goodness gap: 14.0988
+Tiempo: 740.361 s
+epoch_delta[28] changed_w=9621 sign_flip_w=132 max_abs_dw=1.6741 changed_b=9 sign_flip_b=0 max_abs_db=1.55446
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 29/30
+Val accuracy: 0.46875
+Loss pos: 25.0938
+Loss neg: 4.38135
+Goodness pos: 472.728
+Goodness neg: 458.501
+Goodness gap: 14.2271
+Tiempo: 742.168 s
+epoch_delta[29] changed_w=9485 sign_flip_w=144 max_abs_dw=1.27869 changed_b=9 sign_flip_b=0 max_abs_db=0.451294
+
+============================================================
+ACTUALIZACION DE EPOCA
+============================================================
+Epoca 30/30
+Val accuracy: 0.507812
+Loss pos: 24.9766
+Loss neg: 4.50879
+Goodness pos: 474.785
+Goodness neg: 460.562
+Goodness gap: 14.2231
+Tiempo: 741.612 s
+epoch_delta[30] changed_w=9714 sign_flip_w=135 max_abs_dw=1.19772 changed_b=15 sign_flip_b=0 max_abs_db=0.499878
+
+============================================================
 RESULTADOS DE ENTRENAMIENTO DE ETAPA C
 ============================================================
-train_samples   = 512
-eval_samples    = 512
-epochs          = 5
-correct_count   = 58
-train_accuracy  = 0.113281
+holdout_correct_count = 65
+holdout_accuracy     = 0.507812
+
+============================================================
+HISTORIAL POR EPOCA
+============================================================
+epoch[1] loss_pos=25.2241 loss_neg=6.00708 g_pos=1186.17 g_neg=1180.24 gap=5.93506
+epoch[2] loss_pos=25.8171 loss_neg=4.92773 g_pos=519.912 g_neg=513.438 gap=6.47357
+epoch[3] loss_pos=25.374 loss_neg=5.16016 g_pos=530.809 g_neg=521.735 gap=9.07355
+epoch[4] loss_pos=25.6594 loss_neg=4.65869 g_pos=466.693 g_neg=455.524 gap=11.1693
+epoch[5] loss_pos=25.6062 loss_neg=4.61523 g_pos=467.731 g_neg=455.681 gap=12.0502
+epoch[6] loss_pos=25.3923 loss_neg=4.71509 g_pos=472.277 g_neg=459.764 gap=12.5132
+epoch[7] loss_pos=25.5435 loss_neg=4.4939 g_pos=467.783 g_neg=455.403 gap=12.3799
+epoch[8] loss_pos=25.3635 loss_neg=4.56836 g_pos=470.475 g_neg=458.041 gap=12.4343
+epoch[9] loss_pos=25.4529 loss_neg=4.47266 g_pos=468.594 g_neg=456.317 gap=12.2772
+epoch[10] loss_pos=25.3325 loss_neg=4.55225 g_pos=470.543 g_neg=458.233 gap=12.3107
+epoch[11] loss_pos=25.3518 loss_neg=4.521 g_pos=469.908 g_neg=457.429 gap=12.4786
+epoch[12] loss_pos=25.3904 loss_neg=4.40918 g_pos=468.5 g_neg=455.436 gap=13.0645
+epoch[13] loss_pos=25.2966 loss_neg=4.50537 g_pos=470.82 g_neg=457.642 gap=13.1786
+epoch[14] loss_pos=25.1946 loss_neg=4.54224 g_pos=472.315 g_neg=459.107 gap=13.2075
+epoch[15] loss_pos=25.2444 loss_neg=4.42383 g_pos=470.591 g_neg=457.36 gap=13.2307
+epoch[16] loss_pos=25.1802 loss_neg=4.50757 g_pos=472.13 g_neg=458.789 gap=13.3409
+epoch[17] loss_pos=25.2297 loss_neg=4.41064 g_pos=470.666 g_neg=457.317 gap=13.3494
+epoch[18] loss_pos=25.189 loss_neg=4.44678 g_pos=471.365 g_neg=458.047 gap=13.3176
+epoch[19] loss_pos=25.1582 loss_neg=4.43018 g_pos=471.364 g_neg=457.979 gap=13.3851
+epoch[20] loss_pos=25.196 loss_neg=4.3689 g_pos=470.779 g_neg=457.444 gap=13.3354
+epoch[21] loss_pos=25.1687 loss_neg=4.36401 g_pos=470.894 g_neg=457.543 gap=13.3514
+epoch[22] loss_pos=25.1106 loss_neg=4.4375 g_pos=471.883 g_neg=458.505 gap=13.3777
+epoch[23] loss_pos=25.1809 loss_neg=4.35669 g_pos=470.71 g_neg=457.273 gap=13.4371
+epoch[24] loss_pos=25.1931 loss_neg=4.37354 g_pos=471.069 g_neg=457.539 gap=13.53
+epoch[25] loss_pos=25.0872 loss_neg=4.45386 g_pos=472.922 g_neg=459.402 gap=13.5195
+epoch[26] loss_pos=25.0986 loss_neg=4.42871 g_pos=473.415 g_neg=459.425 gap=13.9897
+epoch[27] loss_pos=25.0803 loss_neg=4.41846 g_pos=473.14 g_neg=459.057 gap=14.0832
+epoch[28] loss_pos=25.0198 loss_neg=4.42871 g_pos=473.642 g_neg=459.544 gap=14.0988
+epoch[29] loss_pos=25.0938 loss_neg=4.38135 g_pos=472.728 g_neg=458.501 gap=14.2271
+epoch[30] loss_pos=24.9766 loss_neg=4.50879 g_pos=474.785 g_neg=460.562 gap=14.2231
 
 ============================================================
 VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
 ============================================================
-sample[0] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[1] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[2] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[3] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[4] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[5] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[6] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[7] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[8] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[9] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[10] g_pos=31.9998 g_neg=31.9998 gap=0
-sample[11] g_pos=31.9998 g_neg=31.9998 gap=0
+sample[0] g_pos=394.812 g_neg=365.188 gap=29.625
+sample[1] g_pos=831.5 g_neg=823.688 gap=7.8125
+sample[2] g_pos=512.219 g_neg=505.484 gap=6.73438
+sample[3] g_pos=158.812 g_neg=161.828 gap=-3.01562
+sample[4] g_pos=981.922 g_neg=963.547 gap=18.375
+sample[5] g_pos=406.875 g_neg=434.25 gap=-27.375
+sample[6] g_pos=283.734 g_neg=276.25 gap=7.48438
+sample[7] g_pos=295.109 g_neg=273.734 gap=21.375
+sample[8] g_pos=597.875 g_neg=572.375 gap=25.5
+sample[9] g_pos=530.25 g_neg=535.5 gap=-5.25
+sample[10] g_pos=736.375 g_neg=727.75 gap=8.625
+sample[11] g_pos=586.375 g_neg=585.062 gap=1.3125
 
 ============================================================
 VISTA PREVIA DE PREDICCIONES
 ============================================================
-sample[0] true=1 pred=0 hit=false
-sample[1] true=0 pred=0 hit=true
-sample[2] true=1 pred=0 hit=false
-sample[3] true=4 pred=0 hit=false
-sample[4] true=0 pred=0 hit=true
-sample[5] true=0 pred=0 hit=true
-sample[6] true=7 pred=0 hit=false
-sample[7] true=3 pred=0 hit=false
-sample[8] true=5 pred=0 hit=false
-sample[9] true=3 pred=0 hit=false
-sample[10] true=8 pred=0 hit=false
-sample[11] true=9 pred=0 hit=false
-sample[12] true=1 pred=0 hit=false
-sample[13] true=3 pred=0 hit=false
-sample[14] true=3 pred=0 hit=false
-sample[15] true=1 pred=0 hit=false
-sample[16] true=2 pred=0 hit=false
-sample[17] true=0 pred=0 hit=true
-sample[18] true=7 pred=0 hit=false
-sample[19] true=5 pred=0 hit=false
+sample[41872] true=4 pred=4 hit=true
+sample[41873] true=6 pred=5 hit=false
+sample[41874] true=4 pred=5 hit=false
+sample[41875] true=3 pred=2 hit=false
+sample[41876] true=0 pred=0 hit=true
+sample[41877] true=8 pred=8 hit=true
+sample[41878] true=1 pred=1 hit=true
+sample[41879] true=4 pred=7 hit=false
+sample[41880] true=1 pred=1 hit=true
+sample[41881] true=3 pred=8 hit=false
+sample[41882] true=1 pred=1 hit=true
+sample[41883] true=7 pred=7 hit=true
+sample[41884] true=3 pred=5 hit=false
+sample[41885] true=2 pred=1 hit=false
+sample[41886] true=0 pred=2 hit=false
+sample[41887] true=3 pred=2 hit=false
+sample[41888] true=8 pred=2 hit=false
+sample[41889] true=1 pred=1 hit=true
+sample[41890] true=2 pred=2 hit=true
+sample[41891] true=6 pred=0 hit=false
 
 ============================================================
 RESUMEN DEL MODELO ENTRENADO
 ============================================================
-total_weights = 50816
-min_weight    = -0.25
-max_weight    = 2.5
-positive_w    = 43289
-negative_w    = 7527
-zero_w        = 0
-bias_count    = 64
-first_weights = 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 2.5 -0.25 0.25 -0.25 -0.25 -0.25 -0.25 0.25 0.25 0.25 -0.25 0.25 0.25 -0.25 -0.25 
-first_biases  = 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
-
-============================================================
-NUEVOS SAMPLES PARA TEST
-============================================================
-
-============================================================
-INSPECCION DE RANGO DE MUESTRAS
-============================================================
-start_sample = 10000
-num_samples  = 3
-range        = [10000 : 10003)
-
-============================================================
-MUESTRA 10000
-============================================================
-words crudas:
-word[ 0] = 0x00000004
-word[ 1] = 0x00000000
-word[ 2] = 0x00000000
-word[ 3] = 0x00000000
-word[ 4] = 0x00000e00
-word[ 5] = 0x800001f0
-word[ 6] = 0x1c000019
-word[ 7] = 0x30c00003
-word[ 8] = 0x03040000
-word[ 9] = 0x00300000
-word[10] = 0x00030000
-word[11] = 0x80003060
-word[12] = 0x1c00011f
-word[13] = 0xe0c0001f
-word[14] = 0x0c040001
-word[15] = 0x00c04000
-word[16] = 0x000e0c00
-word[17] = 0x0000f0c0
-word[18] = 0x00000df8
-word[19] = 0x000000cf
-word[20] = 0x40000004
-word[21] = 0x00000000
-word[22] = 0x00000000
-word[23] = 0x00000000
-word[24] = 0x00000000
-
-============================================================
-desempaquetado:
-============================================================
-label_onehot = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-decoded_label = 2
-onehot_valid = true
-padding = [000000]
-pixels ones_count = 86
-pixels preview [0..783] = 
-
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000001110000000000
-0000000000000011111000000000
-0000000000000110011000000000
-0000000000001110001100000000
-0000000000001100001100000000
-0000000000001000001100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000011000001100000000
-0000000001111110001000000000
-0000000011100011111000000000
-0000000011000001111000000000
-0000000010000000110000000000
-0000000010000000110000000000
-0000000011000001110000000000
-0000000011000011110000000000
-0000000001111110110000000000
-0000000000111100110000000000
-0000000000000000100000000000
-0000000000000000100000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-
-============================================================
-MUESTRA 10001
-============================================================
-words crudas:
-word[ 0] = 0x00000020
-word[ 1] = 0x00000000
-word[ 2] = 0x00000000
-word[ 3] = 0x00000000
-word[ 4] = 0x00000000
-word[ 5] = 0x00000000
-word[ 6] = 0xf0000000
-word[ 7] = 0x3f800000
-word[ 8] = 0x3ffc0000
-word[ 9] = 0x03ffe000
-word[10] = 0x00019f00
-word[11] = 0x00000170
-word[12] = 0x70000007
-word[13] = 0x0e000000
-word[14] = 0x01800000
-word[15] = 0x00300000
-word[16] = 0x00030000
-word[17] = 0x00003000
-word[18] = 0x00000380
-word[19] = 0x80000018
-word[20] = 0x0c000001
-word[21] = 0x007c0000
-word[22] = 0x0007c000
-word[23] = 0x00001800
-word[24] = 0x00000000
-
-============================================================
-desempaquetado:
-============================================================
-label_onehot = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
-decoded_label = 5
-onehot_valid = true
-padding = [000000]
-pixels ones_count = 85
-pixels preview [0..783] = 
-
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000011110000000000
-0000000000000111111100000000
-0000000000001111111111110000
-0000000000011111111111110000
-0000000000111110011000000000
-0000000000111010000000000000
-0000000000111000000000000000
-0000000000111000000000000000
-0000000000011100000000000000
-0000000000000110000000000000
-0000000000000011000000000000
-0000000000000011000000000000
-0000000000000011000000000000
-0000000000000111000000000000
-0000000000000110000000000000
-0000000000000110000000000000
-0000000000001100000000000000
-0000000011111000000000000000
-0000000011111000000000000000
-0000000001100000000000000000
-0000000000000000000000000000
-
-============================================================
-MUESTRA 10002
-============================================================
-words crudas:
-word[ 0] = 0x00000200
-word[ 1] = 0x00000000
-word[ 2] = 0x00000000
-word[ 3] = 0x00000000
-word[ 4] = 0x00000000
-word[ 5] = 0x00000000
-word[ 6] = 0xf8000000
-word[ 7] = 0x1fe00000
-word[ 8] = 0x00e78000
-word[ 9] = 0x000e1c00
-word[10] = 0x0000e0e0
-word[11] = 0x30001f06
-word[12] = 0x830001f0
-word[13] = 0x8fe00019
-word[14] = 0x187c0001
-word[15] = 0x01800000
-word[16] = 0x00380000
-word[17] = 0x00030000
-word[18] = 0x00003000
-word[19] = 0x00000300
-word[20] = 0x00000030
-word[21] = 0x30000003
-word[22] = 0x01800000
-word[23] = 0x00180000
-word[24] = 0x00000000
-
-============================================================
-desempaquetado:
-============================================================
-label_onehot = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
-decoded_label = 9
-onehot_valid = true
-padding = [000000]
-pixels ones_count = 89
-pixels preview [0..783] = 
-
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000000000000000000
-0000000000000111110000000000
-0000000000011111111000000000
-0000000001111001110000000000
-0000000011100001110000000000
-0000000111000001110000000000
-0000000110000011111000000000
-0000001100000011111000000000
-0000001100000110011000000000
-0000000111111100011000000000
-0000000011111000011000000000
-0000000000000000011000000000
-0000000000000000011100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000000000001100000000
-0000000000000000011000000000
-0000000000000000011000000000
-0000000000000000000000000000
+total_weights   = 52864
+layer1_weights  = 50816
+layer2_weights  = 2048
+min_weight      = -2.5
+max_weight      = 2.5
+positive_w      = 19764
+negative_w      = 33100
+zero_w          = 0
+clip_pos_w      = 330
+clip_neg_w      = 1198
+bias_count      = 96
+layer1_biases   = 64
+layer2_biases   = 32
+min_bias        = -7.25258
+max_bias        = 8
+first_l1_weights = -0.360062 -0.211243 -0.238922 -0.444763 -0.0579987 -0.657364 -0.470078 -0.394302 -0.127823 -0.271576 -0.03125 0.0625 -0.0625 -0.0625 -0.0625 -0.03125 0.03125 0.03125 0.0625 -0.03125 0.03125 0.0625 -0.0625 -0.0625 
+first_l2_weights = -0.190186 -0.157959 -0.438721 -0.103043 -1.07176 -0.536118 -0.0661621 -1.42554 -1.47314 -0.829819 -1.03345 -1.0437 -0.424072 -0.797119 -0.896973 -1.32007 -0.0922699 -0.904297 -0.0673828 -0.76683 0.0246582 -0.373047 -0.460922 -0.17334 
+first_l1_biases  = -1.05722 0.185715 -0.241318 7.74507 -0.405045 -0.708511 7.71149 -0.283829 -0.502487 -0.230331 -0.117706 -0.263138 -0.385178 -0.638809 -0.128479 -0.299866 
+first_l2_biases  = -0.149536 -0.477142 -6.18243 -0.488068 -5.13829 -0.0261536 -0.178024 -4.13412 -0.182571 -0.505661 -7.18135 -1.21288 -5.62167 -0.302475 -0.144852 -6.17841 
 
 ============================================================
 FIN DEL TESTBENCH

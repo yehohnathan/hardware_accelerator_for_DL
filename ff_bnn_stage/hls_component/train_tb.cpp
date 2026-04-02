@@ -6,6 +6,7 @@
 #include <vector>            // Se incluye vector para almacenar el binario cargado en memoria.
 #include <string>            // Se incluye string para manejar rutas del archivo de entrada.
 #include <fstream>           // Se incluye fstream para verificar rutas candidatas del binario.
+#include <cstdlib>           // Se incluye cstdlib para leer overrides opcionales desde variables de entorno.
 
 // ============================================================
 // Utilidad simple para localizar el binario de entrada
@@ -34,6 +35,30 @@ resolve_path_loop:
 
     return std::string(candidate_paths[0]);
     // Si ninguna ruta existe, se retorna la ruta principal para que el error posterior sea explícito.
+}
+
+// ============================================================
+// Utilidades simples para overrides desde entorno
+// ============================================================
+static int read_env_int_or_default(const char *env_name, int default_value) {
+    const char *env_value = std::getenv(env_name);
+    // Se consulta la variable de entorno solicitada para permitir barridos sin editar el testbench.
+
+    if (env_value == 0) {
+        return default_value;
+        // Si la variable no existe, se conserva el valor por defecto del experimento.
+    }
+
+    int parsed_value = std::atoi(env_value);
+    // Se convierte el texto a entero usando una rutina simple y portable para el testbench.
+
+    if (parsed_value <= 0) {
+        return default_value;
+        // Si el override es invalido o no positivo, se conserva el valor por defecto.
+    }
+
+    return parsed_value;
+    // Se retorna el override valido para el experimento actual.
 }
 
 // ============================================================
@@ -106,19 +131,22 @@ int main() {
     stage_c_experiment_cfg_t cfg;
     // Se crea la estructura de configuración del experimento modular de la Etapa C.
 
-    cfg.train_samples_limit = 512;
-    // Se fija un límite razonable para la C simulation sin impedir ampliar luego el experimento.
+    cfg.train_samples_limit = read_env_int_or_default("FF_TRAIN_SAMPLES", 5000);
+    // Se fija un default de 1024 muestras porque fue suficiente para comparar configuraciones con menor ruido.
 
-    cfg.epochs = 5;
-    // Se fijan 5 épocas como punto de partida para observar si la goodness positiva y negativa se separan.
+    cfg.eval_samples_limit = read_env_int_or_default("FF_EVAL_SAMPLES", 128);
+    // Se fija un hold-out de 128 muestras porque permite medir mejor la accuracy sin disparar demasiado el tiempo.
 
-    cfg.inspect_new_samples = true;
+    cfg.epochs = read_env_int_or_default("FF_EPOCHS", 30);
+    // Se fijan 3 epocas por defecto para detectar rapidamente si el modelo ya se esta moviendo.
+
+    cfg.inspect_new_samples = false;
     // Se habilita la inspección visual de algunas muestras alejadas al final del experimento.
 
-    cfg.inspect_start_sample = 10000;
+    cfg.inspect_start_sample = 50;
     // Se fija el inicio del rango adicional a inspeccionar cuando el dataset sea suficientemente grande.
 
-    cfg.inspect_num_samples = 3;
+    cfg.inspect_num_samples = 5;
     // Se define cuántas muestras consecutivas se imprimirán en esa inspección adicional.
 
     run_stage_c_experiment(input_words, total_samples, seed, cfg);

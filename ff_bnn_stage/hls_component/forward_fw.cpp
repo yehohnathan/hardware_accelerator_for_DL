@@ -1,93 +1,180 @@
-#include "forward_fw.hpp"   // Se incluye el header principal con tipos, constantes y prototipos.
+#include "forward_fw.hpp"  // Se incluye el header principal del kernel FF.
+
+#include <hls_math.h>      // Se incluye la libreria matematica sintetizable de HLS.
+#include <cmath>           // Se incluye cmath para permitir pruebas host usando std::exp y std::log.
 
 // ============================================================
-// Utilidades pequeñas de saturación y valor absoluto
+// Utilidades locales de saturacion y conversion
 // ============================================================
 static latent_t clip_latent(latent_t value) {
     if (value > LATENT_WEIGHT_CLIP) {
         return LATENT_WEIGHT_CLIP;
-        // Se satura el valor positivo que excede el clip máximo permitido.
+        // Se satura cualquier peso por encima del clip positivo.
     }
 
     if (value < -LATENT_WEIGHT_CLIP) {
         return -LATENT_WEIGHT_CLIP;
-        // Se satura el valor negativo que excede el clip mínimo permitido.
+        // Se satura cualquier peso por debajo del clip negativo.
     }
 
     return value;
-    // Se retorna el valor original cuando ya está dentro del rango permitido.
+    // Se retorna el peso original cuando ya esta dentro del rango permitido.
 }
 
 static bias_t clip_bias(bias_t value) {
     if (value > LATENT_BIAS_CLIP) {
         return LATENT_BIAS_CLIP;
-        // Se satura el bias positivo al máximo permitido.
+        // Se satura cualquier bias por encima del clip positivo.
     }
 
     if (value < -LATENT_BIAS_CLIP) {
         return -LATENT_BIAS_CLIP;
-        // Se satura el bias negativo al mínimo permitido.
+        // Se satura cualquier bias por debajo del clip negativo.
     }
 
     return value;
-    // Se retorna el bias cuando ya está dentro del rango válido.
+    // Se retorna el bias original cuando ya esta dentro del rango permitido.
 }
 
 static activation_t relu_local(preact_t value) {
     if (value > 0) {
         return (activation_t)value;
-        // Si el pre-activado es positivo, se conserva sin cambio.
+        // Se conserva el preactivado cuando la salida ReLU es positiva.
     }
 
     return (activation_t)0;
-    // Si el pre-activado es negativo o cero, la activación se anula.
+    // Se anula la salida cuando el preactivado es negativo o cero.
 }
 
-static signal_t normalize_signal(goodness_t value) {
-    goodness_t limited_value = value;
-    // Se crea una copia local para aplicar la saturación previa a la normalización.
-
-    if (limited_value < 0) {
-        limited_value = 0;
-        // Se fuerza a cero cualquier valor negativo para mantener una magnitud de error válida.
+static goodness_t clip_nonlinear_margin(goodness_t value) {
+    if (value > NONLINEAR_CLIP_HW) {
+        return NONLINEAR_CLIP_HW;
+        // Se limita el margen positivo para abaratar las no linealidades.
     }
 
-    if (limited_value > (goodness_t)SIGNAL_CLAMP_HW) {
-        limited_value = (goodness_t)SIGNAL_CLAMP_HW;
-        // Se limita la señal para evitar actualizaciones excesivas y abaratar el hardware.
+    if (value < -NONLINEAR_CLIP_HW) {
+        return -NONLINEAR_CLIP_HW;
+        // Se limita el margen negativo para abaratar las no linealidades.
     }
 
-    return (signal_t)(limited_value / (goodness_t)SIGNAL_CLAMP_HW);
-    // Se retorna la señal normalizada al rango aproximado [0, 1].
+    return value;
+    // Se retorna el margen sin cambios cuando ya esta en el rango util.
 }
 
-static signal_t normalize_activation(activation_t value) {
-    activation_t limited_value = value;
-    // Se crea una copia local para aplicar saturación antes de dividir.
-
-    if (limited_value < 0) {
-        limited_value = 0;
-        // Se fuerza a cero cualquier activación negativa por consistencia con ReLU.
+static feature_t get_feature_value(ff_input_t ff_input, int input_idx) {
+    if (ff_input[input_idx] == 0) {
+        return (feature_t)0;
+        // Se retorna cero cuando el bit de entrada esta inactivo.
     }
 
-    if (limited_value > ACTIVATION_CLAMP_HW) {
-        limited_value = ACTIVATION_CLAMP_HW;
-        // Se limita la activación para que la ganancia local permanezca acotada.
+    if (input_idx < LABEL_BITS) {
+        return LABEL_SCALE_HW;
+        // Se aplica label_scale al segmento de etiqueta incrustada.
     }
 
-    return (signal_t)(limited_value / ACTIVATION_CLAMP_HW);
-    // Se retorna una versión reescalada de la activación al rango aproximado [0, 1].
+    return PIXEL_SCALE_HW;
+    // Se aplica escala unitaria al segmento de pixeles binarios.
 }
 
-static gain_t compute_local_gain(activation_t activation_value, signal_t sample_signal) {
-    signal_t normalized_activation = normalize_activation(activation_value);
-    // Se normaliza la activación de la neurona para obtener una magnitud acotada.
+static float exp_host_or_hls(float value) {
+#ifdef __SYNTHESIS__
+    return hls::expf(value);
+    // En sintesis se usa la primitiva matematica sintetizable provista por HLS.
+#else
+    return std::exp(value);
+    // En ejecucion host se usa std::exp para permitir barridos rapidos fuera de vitis-run.
+#endif
+}
 
-    gain_t gain_value = (gain_t)(LEARNING_RATE_HW * normalized_activation * sample_signal);
-    // Se calcula la ganancia local como producto de tasa de aprendizaje, activación y señal FF.
+static float log_host_or_hls(float value) {
+#ifdef __SYNTHESIS__
+    return hls::logf(value);
+    // En sintesis se usa la primitiva matematica sintetizable provista por HLS.
+#else
+    return std::log(value);
+    // En ejecucion host se usa std::log para permitir barridos rapidos fuera de vitis-run.
+#endif
+}
 
-    return gain_value;
-    // Se retorna la magnitud final usada para ajustar pesos y bias.
+static scale_t sigmoid_hw(goodness_t margin) {
+    goodness_t clipped_margin = clip_nonlinear_margin(margin);
+    // Se acota el margen antes de entrar a la no linealidad suave.
+
+    float x = clipped_margin.to_float();
+    // Se convierte el margen a float para usar la libreria sintetizable de HLS.
+
+    float exp_value = exp_host_or_hls(-x);
+    // Se calcula la exponencial negativa requerida por la sigmoide.
+
+    float sigmoid_value = 1.0f / (1.0f + exp_value);
+    // Se evalua la sigmoide suave usada por el notebook para ponderar la actualizacion.
+
+    return (scale_t)sigmoid_value;
+    // Se retorna la escala de actualizacion en punto fijo.
+}
+
+static loss_t softplus_hw(goodness_t margin) {
+    goodness_t clipped_margin = clip_nonlinear_margin(margin);
+    // Se acota el margen antes de evaluar la perdida FF suave.
+
+    float x = clipped_margin.to_float();
+    // Se convierte el margen a float para reutilizar operadores sintetizables de HLS.
+
+    float softplus_value = 0.0f;
+    // Se reserva la variable local de la softplus estable.
+
+    if (x > 0.0f) {
+        softplus_value = x + log_host_or_hls(1.0f + exp_host_or_hls(-x));
+        // Se usa la forma estable para margenes positivos.
+    } else {
+        softplus_value = log_host_or_hls(1.0f + exp_host_or_hls(x));
+        // Se usa la forma estable para margenes negativos o pequenos.
+    }
+
+    return (loss_t)softplus_value;
+    // Se retorna la perdida FF en punto fijo para trazas del testbench.
+}
+
+static learning_rate_t compute_batch_learning_rate(int batch_size) {
+    if (batch_size <= 0) {
+        return (learning_rate_t)0;
+        // Se evita cualquier division invalida cuando el batch esta vacio.
+    }
+
+    float lr = LEARNING_RATE_HW.to_float();
+    // Se extrae la tasa de aprendizaje base en formato flotante.
+
+    float normalized_lr = lr / (float)batch_size;
+    // Se normaliza la tasa de aprendizaje segun el tamano real del batch.
+
+    return (learning_rate_t)normalized_lr;
+    // Se retorna la tasa de aprendizaje efectiva del batch.
+}
+
+static loss_t compute_mean_loss(stat_accum_t sum_value, int count) {
+    if (count <= 0) {
+        return (loss_t)0;
+        // Se retorna cero cuando no hubo muestras validas en la epoca.
+    }
+
+    float mean_value = sum_value.to_float() / (float)count;
+    // Se calcula la media muestral para dejar el historial comparable entre corridas.
+
+    return (loss_t)mean_value;
+    // Se retorna la media en formato fijo compacto.
+}
+
+static goodness_t compute_mean_goodness(stat_accum_t sum_value, int count) {
+    if (count <= 0) {
+        return (goodness_t)0;
+        // Se retorna cero cuando no hubo muestras validas en la epoca.
+    }
+
+    float mean_value = sum_value.to_float() / (float)count;
+    // Se calcula la media muestral de goodness sobre la epoca completa.
+
+    return (goodness_t)mean_value;
+    // Se retorna la media en formato fijo de la traza hardware.
 }
 
 // ============================================================
@@ -95,450 +182,1003 @@ static gain_t compute_local_gain(activation_t activation_value, signal_t sample_
 // ============================================================
 lfsr_t lfsr16_next(lfsr_t state) {
     bool new_bit = state[0] ^ state[2] ^ state[3] ^ state[5];
-    // Se calcula el nuevo bit de realimentación usando taps sencillos y de bajo costo lógico.
+    // Se calcula el nuevo bit de realimentacion con taps de bajo costo.
 
     lfsr_t next_state = (state >> 1);
-    // Se desplaza el registro una posición a la derecha para avanzar el estado pseudoaleatorio.
+    // Se desplaza el estado una posicion a la derecha.
 
     next_state[15] = new_bit;
-    // El nuevo bit calculado se inserta en la posición más significativa del LFSR.
+    // Se inserta el nuevo bit en la posicion mas significativa.
 
     return next_state;
-    // Se retorna el nuevo estado pseudoaleatorio listo para el siguiente uso.
+    // Se retorna el siguiente estado del generador pseudoaleatorio.
 }
 
 // ============================================================
-// Validación de one-hot
+// Validacion de vectors one-hot
 // ============================================================
 bool is_valid_onehot(label_oh_t label_onehot) {
     ap_uint<4> count_ones = 0;
-    // Se usa un contador pequeño porque solo es necesario contar hasta 10 bits.
+    // Se crea un contador pequeno porque solo hay 10 posiciones posibles.
 
 onehot_count_loop:
     for (int i = 0; i < NUM_CLASSES; i++) {
 #pragma HLS UNROLL
-        // Se desenrolla completamente porque el lazo recorre una longitud fija muy pequeña.
+        // Se desenrolla completamente porque el numero de clases es fijo y pequeno.
 
         if (label_onehot[i] == 1) {
             count_ones++;
-            // Se incrementa el contador cada vez que se detecta un bit activo.
+            // Se incrementa el contador cuando se detecta un bit activo.
         }
     }
 
     return (count_ones == 1);
-    // Un one-hot válido debe contener exactamente un único bit en uno.
+    // Se retorna true solo cuando existe exactamente un uno.
 }
 
 // ============================================================
-// one-hot -> índice
+// Conversion one-hot -> indice
 // ============================================================
 label_idx_t decode_onehot(label_oh_t label_onehot) {
     label_idx_t label_idx = 0;
-    // Se inicializa el índice en cero como valor por defecto ante un vector inválido.
+    // Se inicializa el indice en cero como valor por defecto.
 
 onehot_decode_loop:
     for (int i = 0; i < NUM_CLASSES; i++) {
 #pragma HLS UNROLL
-        // Se desenrolla por completo porque el número de clases es fijo y pequeño.
+        // Se desenrolla completamente porque el recorrido tiene longitud fija.
 
         if (label_onehot[i] == 1) {
             label_idx = (label_idx_t)i;
-            // Cuando el bit i está activo, la clase correspondiente es el índice i.
+            // Se captura el indice de la unica posicion activa.
         }
     }
 
     return label_idx;
-    // Se retorna el índice detectado a partir del vector one-hot.
+    // Se retorna el indice correspondiente al vector one-hot.
 }
 
 // ============================================================
-// índice -> one-hot
+// Conversion indice -> one-hot
 // ============================================================
 label_oh_t encode_onehot(label_idx_t label_idx) {
     label_oh_t label_onehot = 0;
-    // Se limpia completamente el vector de salida antes de activar un único bit.
+    // Se limpia completamente el vector destino.
 
     label_onehot[label_idx] = 1;
-    // Se activa únicamente la posición correspondiente al índice de clase solicitado.
+    // Se activa unicamente la clase solicitada.
 
     return label_onehot;
-    // Se retorna el vector one-hot resultante.
+    // Se retorna el vector one-hot ya construido.
 }
 
 // ============================================================
-// Generación de etiqueta negativa excluyente
+// Generacion de etiqueta negativa excluyente
 // ============================================================
 label_idx_t generate_negative_label(label_idx_t true_label, lfsr_t &state) {
     state = lfsr16_next(state);
-    // Se avanza el estado del generador pseudoaleatorio antes de producir la nueva clase.
+    // Se avanza el LFSR antes de generar la nueva etiqueta.
 
     ap_uint<4> offset = (state.range(3, 0) % 9) + 1;
-    // Se genera un desplazamiento entre 1 y 9 para garantizar que nunca se repita la clase original.
+    // Se produce un desplazamiento entre 1 y 9 para excluir la clase verdadera.
 
     ap_uint<5> temp = true_label + offset;
-    // Se suma el desplazamiento a la clase verdadera en un contenedor que admite el acarreo.
+    // Se suma el desplazamiento en un contenedor que admite acarreo.
 
     label_idx_t negative_label = (temp >= 10) ? (label_idx_t)(temp - 10) : (label_idx_t)temp;
-    // Se aplica un módulo 10 manual para mantener el resultado dentro del rango de clases válidas.
+    // Se aplica un modulo 10 manual para regresar al rango valido de clases.
 
     return negative_label;
-    // Se retorna una etiqueta incorrecta y distinta de la verdadera.
+    // Se retorna una clase incorrecta y distinta de la verdadera.
 }
 
 // ============================================================
-// Carga de una muestra desde 25 words de 32 bits
+// Carga y almacenamiento de muestras empaquetadas
 // ============================================================
 raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
     raw_sample_t sample = 0;
-    // Se inicializa el contenedor completo de 800 bits en cero antes de insertar words.
+    // Se inicializa el contenedor fisico de 800 bits.
 
     int base = sample_idx * WORDS_PER_SAMPLE;
-    // Se calcula el índice lineal donde inicia la muestra seleccionada dentro de memoria externa.
+    // Se calcula la posicion base de la muestra dentro del buffer lineal.
 
 load_words_loop:
     for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
 #pragma HLS UNROLL
-        // Se desenrolla completamente porque siempre se leen exactamente 25 words por muestra.
+        // Se desenrolla porque siempre se cargan exactamente 25 palabras.
 
         sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS) = mem[base + w];
-        // Se coloca la palabra w dentro del rango correspondiente del vector total de 800 bits.
+        // Se copia cada palabra de 32 bits al rango correcto del vector ancho.
     }
 
     return sample;
-    // Se retorna la muestra ya reconstruida como un único vector ancho.
+    // Se retorna la muestra reconstruida como un unico vector de 800 bits.
 }
 
-// ============================================================
-// Almacenamiento de una muestra en 25 words de 32 bits
-// ============================================================
 void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
     int base = sample_idx * WORDS_PER_SAMPLE;
-    // Se calcula la posición base en memoria lineal donde se escribirá la muestra objetivo.
+    // Se calcula la posicion base de escritura dentro del buffer lineal.
 
 store_words_loop:
     for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
 #pragma HLS UNROLL
-        // Se desenrolla completamente porque la anchura de la muestra es fija en 25 words.
+        // Se desenrolla porque siempre se almacenan exactamente 25 palabras.
 
         mem[base + w] = sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS);
-        // Se extrae cada bloque de 32 bits del vector ancho y se escribe en la memoria destino.
+        // Se extrae cada palabra de 32 bits del vector ancho y se almacena externamente.
     }
 }
 
 // ============================================================
-// Desempaquetado de la muestra física de 800 bits
+// Empaquetado y desempaquetado fisico
 // ============================================================
 void unpack_sample(raw_sample_t sample, label_oh_t &label_onehot, pixels_t &pixels, padding_t &padding) {
-    label_onehot = sample.range(9, 0);
-    // Se extraen los 10 bits menos significativos que contienen la etiqueta one-hot.
+    label_onehot = sample.range(LABEL_BITS - 1, 0);
+    // Se recupera el segmento de etiqueta one-hot.
 
-    pixels = sample.range(793, 10);
-    // Se extraen los 784 bits centrales que contienen la imagen binaria.
+    pixels = sample.range(LABEL_BITS + PIXEL_BITS - 1, LABEL_BITS);
+    // Se recupera el segmento de pixeles binarios.
 
-    padding = sample.range(799, 794);
-    // Se extraen los 6 bits más significativos de padding físico.
+    padding = sample.range(TOTAL_BITS - 1, LABEL_BITS + PIXEL_BITS);
+    // Se recupera el segmento de padding fisico.
 }
 
-// ============================================================
-// Empaquetado de la muestra física de 800 bits
-// ============================================================
 raw_sample_t pack_sample(label_oh_t label_onehot, pixels_t pixels, padding_t padding) {
     raw_sample_t sample = 0;
-    // Se limpia completamente el contenedor físico antes de insertar los campos útiles.
+    // Se limpia completamente la muestra fisica antes de insertar campos.
 
-    sample.range(9, 0) = label_onehot;
-    // Se inserta el label one-hot en los 10 bits menos significativos.
+    sample.range(LABEL_BITS - 1, 0) = label_onehot;
+    // Se inserta la etiqueta one-hot en el segmento bajo.
 
-    sample.range(793, 10) = pixels;
-    // Se inserta la imagen binaria en la zona central del vector físico.
+    sample.range(LABEL_BITS + PIXEL_BITS - 1, LABEL_BITS) = pixels;
+    // Se inserta la imagen binaria en el segmento central.
 
-    sample.range(799, 794) = padding;
-    // Se inserta el padding original en los bits más significativos para preservar el layout.
+    sample.range(TOTAL_BITS - 1, LABEL_BITS + PIXEL_BITS) = padding;
+    // Se inserta el padding fisico en el segmento alto.
 
     return sample;
-    // Se retorna la muestra completa ya reempaquetada.
+    // Se retorna la muestra fisica ya empaquetada.
 }
 
 // ============================================================
-// Construcción y desempaquetado de la entrada lógica FF de 794 bits
+// Construccion de la entrada logica FF
 // ============================================================
 ff_input_t build_ff_input(label_oh_t label_onehot, pixels_t pixels) {
     ff_input_t ff_input = 0;
-    // Se inicializa la entrada lógica útil en cero antes de asignar sus campos.
+    // Se limpia el vector logico de entrada FF.
 
     ff_input.range(LABEL_BITS - 1, 0) = label_onehot;
-    // Se coloca la etiqueta one-hot en la parte baja del vector lógico.
+    // Se coloca la etiqueta incrustada en la zona baja.
 
     ff_input.range(MODEL_INPUT_BITS - 1, LABEL_BITS) = pixels;
-    // Se coloca la imagen binaria a continuación del label respetando el layout del proyecto.
+    // Se coloca la imagen binaria a continuacion de la etiqueta.
 
     return ff_input;
-    // Se retorna la entrada lógica útil de 794 bits lista para el forward de la capa.
+    // Se retorna la entrada logica final de 794 bits.
 }
 
 void unpack_ff_input(ff_input_t ff_input, label_oh_t &label_onehot, pixels_t &pixels) {
     label_onehot = ff_input.range(LABEL_BITS - 1, 0);
-    // Se recupera la etiqueta one-hot almacenada en la parte baja del vector lógico.
+    // Se recupera la etiqueta incrustada.
 
     pixels = ff_input.range(MODEL_INPUT_BITS - 1, LABEL_BITS);
-    // Se recuperan los 784 bits correspondientes a la imagen binaria.
+    // Se recupera la imagen binaria.
 }
 
 // ============================================================
-// Inicialización del modelo latente entrenable
+// Inicializacion del modelo latente por capa
 // ============================================================
-static void initialize_model(latent_t weights[MODEL_NEURONS][MODEL_INPUT_BITS], bias_t biases[MODEL_NEURONS], lfsr_t &state) {
-#pragma HLS INLINE off
-    // Se evita inline total para no replicar toda la inicialización cada vez que se invoque desde el top.
+template <int INPUT_DIM, int OUTPUT_DIM>
+static void initialize_dense_layer(
+    latent_t weights[OUTPUT_DIM][INPUT_DIM],
+    bias_t biases[OUTPUT_DIM],
+    lfsr_t &state
+) {
+#pragma HLS inline off
+    // Se evita inline para no replicar el bloque de inicializacion de una capa completa.
 
-init_neuron_loop:
-    for (int neuron = 0; neuron < MODEL_NEURONS; neuron++) {
-        // Se recorre cada neurona de la capa entrenable para inicializar su bias y todos sus pesos.
+init_dense_neuron_loop:
+    for (int neuron = 0; neuron < OUTPUT_DIM; neuron++) {
+        // Se recorre cada neurona latente de la capa actual.
 
-        biases[neuron] = 0;
-        // Cada bias parte en cero para no introducir desplazamientos iniciales arbitrarios.
+        biases[neuron] = (bias_t)0;
+        // Se inicializa cada bias en cero para arrancar desde una base simetrica.
 
-init_weight_loop:
-        for (int input_idx = 0; input_idx < MODEL_INPUT_BITS; input_idx++) {
+init_dense_weight_loop:
+        for (int input_idx = 0; input_idx < INPUT_DIM; input_idx++) {
 #pragma HLS PIPELINE II=1
-            // Se pipelinea la inicialización por peso para abaratar tiempo de arranque sin consumir registros masivos.
+            // Se pipelinea la inicializacion de pesos para no inflar la latencia de arranque.
 
             state = lfsr16_next(state);
-            // Se avanza el LFSR para obtener un nuevo patrón pseudoaleatorio barato en hardware.
+            // Se avanza el generador pseudoaleatorio antes de fijar el nuevo peso.
 
-            if (state[0] == 1) {
-                weights[neuron][input_idx] = LATENT_INIT_MAG;
-                // Cuando el bit pseudoaleatorio vale 1, el peso latente inicia con signo positivo.
-            } else {
-                weights[neuron][input_idx] = -LATENT_INIT_MAG;
-                // Cuando el bit pseudoaleatorio vale 0, el peso latente inicia con signo negativo.
-            }
+            latent_t magnitude = state[1] ? LATENT_INIT_MAG : (latent_t)(LATENT_INIT_MAG * (latent_t)2);
+            // Se alterna entre dos magnitudes pequenas para romper simetrias de inicializacion.
+
+            weights[neuron][input_idx] = state[0] ? magnitude : (latent_t)(-magnitude);
+            // Se asigna un signo pseudoaleatorio y una magnitud pequena al peso latente.
         }
     }
 }
 
 // ============================================================
-// Forward local de una sola capa FF con 8 neuronas en paralelo
+// Forward local de la primera capa desde la entrada FF
 // ============================================================
-static void ff_layer_forward(
+static void ff_layer1_forward(
     ff_input_t ff_input,
-    latent_t weights[MODEL_NEURONS][MODEL_INPUT_BITS],
-    bias_t biases[MODEL_NEURONS],
-    activation_t activations[MODEL_NEURONS],
+    latent_t weights[MODEL_LAYER1_NEURONS][MODEL_LAYER1_INPUT_BITS],
+    bias_t biases[MODEL_LAYER1_NEURONS],
+    activation_t activations[MODEL_LAYER1_NEURONS],
     goodness_t &goodness
 ) {
-#pragma HLS INLINE off
-    // Se evita inline total para mantener una sola instancia clara del forward local dentro del diseño.
+#pragma HLS inline off
+    // Se evita inline para conservar una sola instancia clara del forward de la capa 1.
 
-    goodness_t sum_sq = 0;
-    // Se inicializa el acumulador de suma de cuadrados usado para calcular la goodness de la capa.
+    stat_accum_t sum_sq = 0;
+    // Se inicializa el acumulador de suma de cuadrados para la goodness local.
 
-tile_forward_loop:
-    for (int tile = 0; tile < MODEL_NEURON_TILES; tile++) {
-        // Se recorre cada tile de 8 neuronas para explotar el paralelismo fijado por la arquitectura base.
+layer1_tile_forward_loop:
+    for (int tile = 0; tile < MODEL_LAYER1_TILES; tile++) {
+        // Se recorre cada tile de la primera capa respetando el paralelismo de 8 neuronas.
 
         preact_t z_lane[MODEL_PARALLEL_NEURONS];
-        // Se crea un pequeño arreglo local para acumular el pre-activado de cada lane en el tile actual.
+        // Se reservan los acumuladores locales del preactivado por lane.
 
 #pragma HLS ARRAY_PARTITION variable=z_lane complete
-        // Se particiona completamente el arreglo local de acumuladores para permitir 8 operaciones en paralelo.
+        // Se particionan completamente los acumuladores locales para operar en paralelo.
 
-lane_init_loop:
+layer1_lane_init_loop:
         for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-            // Se desenrolla totalmente porque cada lane representa una neurona físicamente paralela dentro del tile.
+            // Se inicializan en paralelo los 8 lanes del tile actual.
 
             int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-            // Se calcula el índice absoluto de la neurona asociada al lane actual.
+            // Se calcula el indice absoluto de la neurona del lane actual.
 
             z_lane[lane] = (preact_t)biases[neuron];
-            // Cada acumulador inicia con el bias latente de la neurona correspondiente.
+            // Se arranca el preactivado desde el bias latente de esa neurona.
         }
 
-input_forward_loop:
-        for (int input_idx = 0; input_idx < MODEL_INPUT_BITS; input_idx++) {
+layer1_input_forward_loop:
+        for (int input_idx = 0; input_idx < MODEL_LAYER1_INPUT_BITS; input_idx++) {
 #pragma HLS PIPELINE II=1
-            // Se pipelinea el recorrido sobre las 794 entradas para sostener throughput razonable sin desplegar todo el producto interno.
+            // Se pipelinea el recorrido sobre las 794 entradas de la primera capa.
 
-            ap_uint<1> x_bit = ff_input[input_idx];
-            // Se extrae el bit de entrada actual para decidir si esta dimensión contribuye o no al pre-activado.
+            feature_t feature_value = get_feature_value(ff_input, input_idx);
+            // Se reconstruye el valor numerico de la caracteristica actual.
 
-            if (x_bit == 1) {
-                // Solo las entradas activas contribuyen porque el dataset ya está binarizado como 0/1 en hardware.
+            if (feature_value != 0) {
+                // Solo las entradas activas aportan al preactivado de la capa.
 
-lane_acc_loop:
+layer1_lane_acc_loop:
                 for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-                    // Se desenrolla completamente para actualizar las 8 neuronas del tile en paralelo.
+                    // Se actualizan en paralelo las 8 neuronas activas del tile.
 
                     int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-                    // Se recalcula el índice absoluto de la neurona asociada al lane.
+                    // Se calcula el indice absoluto de la neurona del lane actual.
 
                     if (weights[neuron][input_idx] >= 0) {
-                        z_lane[lane] = z_lane[lane] + (preact_t)1;
-                        // Si el peso latente tiene signo positivo, el bit activo aporta +1 al pre-activado.
+                        z_lane[lane] = z_lane[lane] + (preact_t)feature_value;
+                        // Se suma la caracteristica cuando el peso binarizado vale +1.
                     } else {
-                        z_lane[lane] = z_lane[lane] - (preact_t)1;
-                        // Si el peso latente tiene signo negativo, el bit activo aporta -1 al pre-activado.
+                        z_lane[lane] = z_lane[lane] - (preact_t)feature_value;
+                        // Se resta la caracteristica cuando el peso binarizado vale -1.
                     }
                 }
             }
         }
 
-lane_output_loop:
+layer1_lane_output_loop:
         for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-            // Se desenrolla completamente para producir activaciones y cuadrados de las 8 neuronas en paralelo.
+            // Se materializan en paralelo las activaciones y la suma de cuadrados del tile.
 
             int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-            // Se calcula el índice absoluto de la neurona cuya salida se registrará.
+            // Se calcula el indice absoluto de la neurona del lane actual.
 
             activation_t activation_value = relu_local(z_lane[lane]);
-            // Se aplica la activación ReLU local recomendada para la versión FF del proyecto.
+            // Se aplica la activacion ReLU definida por el notebook.
 
             activations[neuron] = activation_value;
-            // Se almacena la activación local para usarla más adelante en actualización o depuración.
+            // Se almacena la activacion para la segunda capa y para la actualizacion local.
 
-            sum_sq = sum_sq + (goodness_t)(activation_value * activation_value);
-            // Se acumula el cuadrado de la activación para construir la goodness de la capa.
+            sum_sq = sum_sq + (stat_accum_t)(activation_value * activation_value);
+            // Se acumula el cuadrado de la activacion para la goodness de esta capa.
         }
     }
 
-    goodness = (goodness_t)(sum_sq / (goodness_t)MODEL_NEURONS);
-    // Se obtiene la goodness final como media de cuadrados de las activaciones locales.
+    float mean_sq = sum_sq.to_float() / (float)MODEL_LAYER1_NEURONS;
+    // Se convierte la suma a media cuadratica por neurona de la primera capa.
+
+    goodness = (goodness_t)mean_sq;
+    // Se retorna la goodness local de la primera capa.
 }
 
 // ============================================================
-// Cálculo de la señal local de aprendizaje FF por tramos
+// Forward local de una capa densa activacion -> activacion
 // ============================================================
-static void ff_compute_training_signal(goodness_t g_pos, goodness_t g_neg, signal_t &e_pos, signal_t &e_neg) {
-#pragma HLS INLINE
-    // Se fuerza inline porque esta operación es muy pequeña y depende solo de dos goodness y un umbral fijo.
-
-    goodness_t pos_error = 0;
-    // Se crea una variable para la corrección positiva asociada a muestras reales.
-
-    goodness_t neg_error = 0;
-    // Se crea una variable para la corrección negativa asociada a muestras incorrectamente etiquetadas.
-
-    if (g_pos < GOODNESS_THRESHOLD_HW) {
-        pos_error = GOODNESS_THRESHOLD_HW - g_pos;
-        // Cuando la goodness positiva queda por debajo del umbral, se genera presión para aumentarla.
-    }
-
-    if (g_neg > GOODNESS_THRESHOLD_HW) {
-        neg_error = g_neg - GOODNESS_THRESHOLD_HW;
-        // Cuando la goodness negativa supera el umbral, se genera presión para reducirla.
-    }
-
-    e_pos = normalize_signal(pos_error);
-    // Se normaliza la señal positiva resultante para usarla como factor de actualización acotado.
-
-    e_neg = normalize_signal(neg_error);
-    // Se normaliza la señal negativa resultante para usarla como factor de actualización acotado.
-}
-
-// ============================================================
-// Actualización local de pesos y bias latentes
-// ============================================================
-static void ff_update_model(
-    ff_input_t x_pos,
-    ff_input_t x_neg,
-    activation_t h_pos[MODEL_NEURONS],
-    activation_t h_neg[MODEL_NEURONS],
-    signal_t e_pos,
-    signal_t e_neg,
-    latent_t weights[MODEL_NEURONS][MODEL_INPUT_BITS],
-    bias_t biases[MODEL_NEURONS]
+template <int INPUT_DIM, int OUTPUT_DIM, int TILE_COUNT>
+static void ff_layer_forward_dense(
+    const activation_t layer_input[INPUT_DIM],
+    latent_t weights[OUTPUT_DIM][INPUT_DIM],
+    bias_t biases[OUTPUT_DIM],
+    activation_t activations[OUTPUT_DIM],
+    goodness_t &goodness
 ) {
-#pragma HLS INLINE off
-    // Se evita inline total para no duplicar el bloque de actualización dentro del top por cada llamada.
+#pragma HLS inline off
+    // Se evita inline para mantener una unica instancia clara del forward denso.
 
-tile_update_loop:
-    for (int tile = 0; tile < MODEL_NEURON_TILES; tile++) {
-        // Se recorre cada tile de 8 neuronas para respetar el paralelismo objetivo de la arquitectura base.
+    stat_accum_t sum_sq = 0;
+    // Se inicializa el acumulador de suma de cuadrados de la capa actual.
 
-        gain_t pos_gain_lane[MODEL_PARALLEL_NEURONS];
-        // Se almacenan las ganancias positivas locales de las 8 neuronas del tile actual.
+dense_tile_forward_loop:
+    for (int tile = 0; tile < TILE_COUNT; tile++) {
+        // Se recorre cada tile de la capa densa respetando el paralelismo fijo.
 
-        gain_t neg_gain_lane[MODEL_PARALLEL_NEURONS];
-        // Se almacenan las ganancias negativas locales de las 8 neuronas del tile actual.
+        preact_t z_lane[MODEL_PARALLEL_NEURONS];
+        // Se reservan los acumuladores locales del preactivado por lane.
 
-#pragma HLS ARRAY_PARTITION variable=pos_gain_lane complete
-        // Se particiona por completo el arreglo local positivo para usar todas las lanes en paralelo.
+#pragma HLS ARRAY_PARTITION variable=z_lane complete
+        // Se particionan completamente los acumuladores del tile para operar en paralelo.
 
-#pragma HLS ARRAY_PARTITION variable=neg_gain_lane complete
-        // Se particiona por completo el arreglo local negativo para usar todas las lanes en paralelo.
-
-lane_gain_loop:
+dense_lane_init_loop:
         for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-            // Se desenrolla totalmente porque cada lane corresponde a una neurona física paralela del tile.
+            // Se inicializan en paralelo los 8 lanes del tile actual.
 
             int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-            // Se calcula el índice absoluto de la neurona asociada al lane actual.
+            // Se calcula el indice absoluto de la neurona del lane actual.
 
-            pos_gain_lane[lane] = compute_local_gain(h_pos[neuron], e_pos);
-            // Se calcula la ganancia de refuerzo positiva a partir de activación local y señal FF positiva.
-
-            neg_gain_lane[lane] = compute_local_gain(h_neg[neuron], e_neg);
-            // Se calcula la ganancia de supresión negativa a partir de activación local y señal FF negativa.
+            z_lane[lane] = (preact_t)biases[neuron];
+            // Se inicializa el preactivado con el bias latente correspondiente.
         }
 
-input_update_loop:
-        for (int input_idx = 0; input_idx < MODEL_INPUT_BITS; input_idx++) {
+dense_input_forward_loop:
+        for (int input_idx = 0; input_idx < INPUT_DIM; input_idx++) {
 #pragma HLS PIPELINE II=1
-            // Se pipelinea la actualización peso por peso para equilibrar latencia y uso de recursos en HLS.
+            // Se pipelinea el recorrido sobre la entrada densa de la capa actual.
 
-            ap_uint<1> pos_bit = x_pos[input_idx];
-            // Se extrae el bit activo o inactivo de la entrada positiva para esta dimensión.
+            activation_t input_value = layer_input[input_idx];
+            // Se recupera la activacion de entrada que alimenta esta capa.
 
-            ap_uint<1> neg_bit = x_neg[input_idx];
-            // Se extrae el bit activo o inactivo de la entrada negativa para esta dimensión.
+            if (input_value != 0) {
+                // Solo las entradas activas aportan al preactivado local.
 
-lane_weight_update_loop:
-            for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+dense_lane_acc_loop:
+                for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-                // Se desenrolla por completo para actualizar las 8 neuronas del tile en paralelo.
+                    // Se actualizan en paralelo las 8 neuronas del tile actual.
 
-                int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-                // Se calcula el índice absoluto de la neurona cuyo peso se ajustará.
+                    int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
+                    // Se calcula el indice absoluto de la neurona del lane actual.
 
-                latent_t new_weight = weights[neuron][input_idx];
-                // Se copia localmente el peso latente actual para ajustarlo antes de reescribirlo.
-
-                if (pos_bit == 1) {
-                    new_weight = clip_latent(new_weight + (latent_t)pos_gain_lane[lane]);
-                    // Si el bit positivo está activo, el peso recibe refuerzo hebbiano positivo acotado.
+                    if (weights[neuron][input_idx] >= 0) {
+                        z_lane[lane] = z_lane[lane] + (preact_t)input_value;
+                        // Se suma la entrada cuando el peso binarizado vale +1.
+                    } else {
+                        z_lane[lane] = z_lane[lane] - (preact_t)input_value;
+                        // Se resta la entrada cuando el peso binarizado vale -1.
+                    }
                 }
-
-                if (neg_bit == 1) {
-                    new_weight = clip_latent(new_weight - (latent_t)neg_gain_lane[lane]);
-                    // Si el bit negativo está activo, el peso recibe supresión hebbiana negativa acotada.
-                }
-
-                weights[neuron][input_idx] = new_weight;
-                // Se escribe el peso latente actualizado de vuelta en la memoria del modelo.
             }
         }
 
-lane_bias_update_loop:
+dense_lane_output_loop:
         for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
 #pragma HLS UNROLL
-            // Se desenrolla completamente porque solo se actualizan 8 bias por tile.
+            // Se materializan en paralelo las activaciones y la suma de cuadrados del tile.
 
             int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
-            // Se calcula el índice absoluto de la neurona cuyo bias se ajustará.
+            // Se calcula el indice absoluto de la neurona del lane actual.
 
-            bias_t new_bias = biases[neuron];
-            // Se copia localmente el bias actual antes de modificarlo.
+            activation_t activation_value = relu_local(z_lane[lane]);
+            // Se aplica la activacion ReLU definida por el notebook.
 
-            new_bias = clip_bias(new_bias + (bias_t)pos_gain_lane[lane] - (bias_t)neg_gain_lane[lane]);
-            // El bias se incrementa con evidencia positiva y se reduce con evidencia negativa de forma local.
+            activations[neuron] = activation_value;
+            // Se almacena la activacion para la siguiente etapa de entrenamiento o inferencia.
 
-            biases[neuron] = new_bias;
-            // Se escribe el bias latente actualizado de vuelta en el estado entrenable del modelo.
+            sum_sq = sum_sq + (stat_accum_t)(activation_value * activation_value);
+            // Se acumula el cuadrado de la activacion para la goodness local.
         }
+    }
+
+    float mean_sq = sum_sq.to_float() / (float)OUTPUT_DIM;
+    // Se convierte la suma a media cuadratica por neurona de la capa actual.
+
+    goodness = (goodness_t)mean_sq;
+    // Se retorna la goodness local de la capa actual.
+}
+
+// ============================================================
+// Acumulacion local de la actualizacion de la primera capa
+// ============================================================
+static void accumulate_layer1_tile_update(
+    ff_input_t pos_input,
+    ff_input_t neg_input,
+    const activation_t h_pos[MODEL_LAYER1_NEURONS],
+    const activation_t h_neg[MODEL_LAYER1_NEURONS],
+    scale_t pos_scale,
+    scale_t neg_scale,
+    update_accum_t weight_delta[MODEL_PARALLEL_NEURONS][MODEL_LAYER1_INPUT_BITS],
+    update_accum_t bias_delta[MODEL_PARALLEL_NEURONS],
+    int tile
+) {
+#pragma HLS inline off
+    // Se evita inline para mantener acotado el bloque de actualizacion de la capa 1.
+
+    update_accum_t pos_scaled_activation[MODEL_PARALLEL_NEURONS];
+    // Se reservan las activaciones positivas ya ponderadas por sigmoide para el tile actual.
+
+    update_accum_t neg_scaled_activation[MODEL_PARALLEL_NEURONS];
+    // Se reservan las activaciones negativas ya ponderadas por sigmoide para el tile actual.
+
+#pragma HLS ARRAY_PARTITION variable=pos_scaled_activation complete
+    // Se particionan completamente las activaciones positivas ponderadas del tile.
+
+#pragma HLS ARRAY_PARTITION variable=neg_scaled_activation complete
+    // Se particionan completamente las activaciones negativas ponderadas del tile.
+
+layer1_scaled_activation_loop:
+    for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+        // Se calculan en paralelo las activaciones ponderadas de las 8 neuronas del tile.
+
+        int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
+        // Se calcula el indice absoluto de la neurona del lane actual.
+
+        pos_scaled_activation[lane] =
+            (update_accum_t)h_pos[neuron] * (update_accum_t)pos_scale;
+        // Se pondera la activacion positiva con la sigmoide del margen positivo.
+
+        neg_scaled_activation[lane] =
+            (update_accum_t)h_neg[neuron] * (update_accum_t)neg_scale;
+        // Se pondera la activacion negativa con la sigmoide del margen negativo.
+
+        bias_delta[lane] = bias_delta[lane] + pos_scaled_activation[lane] - neg_scaled_activation[lane];
+        // Se acumula la actualizacion de bias como evidencia positiva menos negativa.
+    }
+
+layer1_accumulate_input_loop:
+    for (int input_idx = 0; input_idx < MODEL_LAYER1_INPUT_BITS; input_idx++) {
+#pragma HLS PIPELINE II=1
+        // Se recorre cada entrada de la primera capa con pipeline sintetizable.
+
+        feature_t pos_value = get_feature_value(pos_input, input_idx);
+        // Se reconstruye el valor numerico de la entrada positiva actual.
+
+        feature_t neg_value = get_feature_value(neg_input, input_idx);
+        // Se reconstruye el valor numerico de la entrada negativa actual.
+
+layer1_accumulate_lane_loop:
+        for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+            // Se acumula en paralelo el delta de las 8 neuronas del tile.
+
+            weight_delta[lane][input_idx] =
+                weight_delta[lane][input_idx]
+                + (update_accum_t)pos_value * pos_scaled_activation[lane]
+                - (update_accum_t)neg_value * neg_scaled_activation[lane];
+            // Se aplica la correlacion ponderada del notebook usando x_pos y x_neg por separado.
+        }
+    }
+}
+
+// ============================================================
+// Acumulacion local de la actualizacion de una capa densa
+// ============================================================
+template <int INPUT_DIM, int OUTPUT_DIM>
+static void accumulate_dense_tile_update(
+    const activation_t pos_input[INPUT_DIM],
+    const activation_t neg_input[INPUT_DIM],
+    const activation_t h_pos[OUTPUT_DIM],
+    const activation_t h_neg[OUTPUT_DIM],
+    scale_t pos_scale,
+    scale_t neg_scale,
+    update_accum_t weight_delta[MODEL_PARALLEL_NEURONS][INPUT_DIM],
+    update_accum_t bias_delta[MODEL_PARALLEL_NEURONS],
+    int tile
+) {
+#pragma HLS inline off
+    // Se evita inline para mantener una sola rutina de actualizacion densa.
+
+    update_accum_t pos_scaled_activation[MODEL_PARALLEL_NEURONS];
+    // Se reservan las activaciones positivas ponderadas del tile actual.
+
+    update_accum_t neg_scaled_activation[MODEL_PARALLEL_NEURONS];
+    // Se reservan las activaciones negativas ponderadas del tile actual.
+
+#pragma HLS ARRAY_PARTITION variable=pos_scaled_activation complete
+    // Se particionan completamente las activaciones positivas ponderadas.
+
+#pragma HLS ARRAY_PARTITION variable=neg_scaled_activation complete
+    // Se particionan completamente las activaciones negativas ponderadas.
+
+dense_scaled_activation_loop:
+    for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+        // Se calculan en paralelo las activaciones ponderadas de las 8 neuronas del tile.
+
+        int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
+        // Se calcula el indice absoluto de la neurona del lane actual.
+
+        pos_scaled_activation[lane] =
+            (update_accum_t)h_pos[neuron] * (update_accum_t)pos_scale;
+        // Se pondera la activacion positiva con la sigmoide del margen positivo.
+
+        neg_scaled_activation[lane] =
+            (update_accum_t)h_neg[neuron] * (update_accum_t)neg_scale;
+        // Se pondera la activacion negativa con la sigmoide del margen negativo.
+
+        bias_delta[lane] = bias_delta[lane] + pos_scaled_activation[lane] - neg_scaled_activation[lane];
+        // Se acumula la actualizacion de bias como evidencia positiva menos negativa.
+    }
+
+dense_accumulate_input_loop:
+    for (int input_idx = 0; input_idx < INPUT_DIM; input_idx++) {
+#pragma HLS PIPELINE II=1
+        // Se recorre cada entrada de la capa actual con pipeline sintetizable.
+
+        activation_t pos_value = pos_input[input_idx];
+        // Se recupera la activacion positiva de entrada del batch actual.
+
+        activation_t neg_value = neg_input[input_idx];
+        // Se recupera la activacion negativa de entrada del batch actual.
+
+dense_accumulate_lane_loop:
+        for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+            // Se acumula en paralelo el delta de las 8 neuronas del tile actual.
+
+            weight_delta[lane][input_idx] =
+                weight_delta[lane][input_idx]
+                + (update_accum_t)pos_value * pos_scaled_activation[lane]
+                - (update_accum_t)neg_value * neg_scaled_activation[lane];
+            // Se aplica la correlacion ponderada del notebook sobre la capa densa actual.
+        }
+    }
+}
+
+// ============================================================
+// Aplicacion del update acumulado a una capa densa
+// ============================================================
+template <int INPUT_DIM, int OUTPUT_DIM>
+static void apply_dense_tile_update(
+    latent_t weights[OUTPUT_DIM][INPUT_DIM],
+    bias_t biases[OUTPUT_DIM],
+    update_accum_t weight_delta[MODEL_PARALLEL_NEURONS][INPUT_DIM],
+    update_accum_t bias_delta[MODEL_PARALLEL_NEURONS],
+    learning_rate_t batch_lr,
+    int tile
+) {
+#pragma HLS inline off
+    // Se evita inline para mantener acotada la logica de escritura sobre el modelo latente.
+
+apply_dense_weight_loop:
+    for (int input_idx = 0; input_idx < INPUT_DIM; input_idx++) {
+#pragma HLS PIPELINE II=1
+        // Se aplica el batch update a cada conexion del tile con pipeline.
+
+apply_dense_lane_loop:
+        for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+            // Se actualizan en paralelo las 8 neuronas del tile actual.
+
+            int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
+            // Se calcula el indice absoluto de la neurona del lane actual.
+
+            latent_t delta_weight = (latent_t)((update_accum_t)batch_lr * weight_delta[lane][input_idx]);
+            // Se normaliza el delta acumulado del batch y se convierte al tipo del peso latente.
+
+            weights[neuron][input_idx] = clip_latent(weights[neuron][input_idx] + delta_weight);
+            // Se aplica la actualizacion local y luego se hace weight clipping.
+        }
+    }
+
+apply_dense_bias_loop:
+    for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+        // Se actualizan en paralelo los bias de las 8 neuronas del tile.
+
+        int neuron = tile * MODEL_PARALLEL_NEURONS + lane;
+        // Se calcula el indice absoluto de la neurona del lane actual.
+
+        bias_t delta_bias = (bias_t)((update_accum_t)batch_lr * bias_delta[lane]);
+        // Se normaliza el delta acumulado del bias segun el tamano real del batch.
+
+        biases[neuron] = clip_bias(biases[neuron] + delta_bias);
+        // Se aplica la actualizacion local y luego se satura el bias.
+    }
+}
+
+// ============================================================
+// Entrenamiento local por mini-batch
+// ============================================================
+static void train_batch_local(
+    const word_t *in_mem,
+    int batch_start,
+    int batch_size,
+    latent_t weights_l1[MODEL_LAYER1_NEURONS][MODEL_LAYER1_INPUT_BITS],
+    bias_t biases_l1[MODEL_LAYER1_NEURONS],
+    latent_t weights_l2[MODEL_LAYER2_NEURONS][MODEL_LAYER2_INPUT_BITS],
+    bias_t biases_l2[MODEL_LAYER2_NEURONS],
+    lfsr_t &train_state,
+    bool capture_sample_metrics,
+    goodness_t *g_pos_mem,
+    goodness_t *g_neg_mem,
+    goodness_t *gap_mem,
+    stat_accum_t &epoch_loss_pos_sum,
+    stat_accum_t &epoch_loss_neg_sum,
+    stat_accum_t &epoch_g_pos_sum,
+    stat_accum_t &epoch_g_neg_sum
+) {
+#pragma HLS inline off
+    // Se evita inline para no replicar toda la logica de batch dentro del top.
+
+    ff_input_t batch_pos_inputs[MODEL_BATCH_SIZE];
+    // Se reserva el buffer del batch de ejemplos positivos ya incrustados.
+
+    ff_input_t batch_neg_inputs[MODEL_BATCH_SIZE];
+    // Se reserva el buffer del batch de ejemplos negativos ya incrustados.
+
+    activation_t batch_h1_pos[MODEL_BATCH_SIZE][MODEL_LAYER1_NEURONS];
+    // Se reserva el buffer de activaciones positivas de la primera capa.
+
+    activation_t batch_h1_neg[MODEL_BATCH_SIZE][MODEL_LAYER1_NEURONS];
+    // Se reserva el buffer de activaciones negativas de la primera capa.
+
+    activation_t batch_h2_pos[MODEL_BATCH_SIZE][MODEL_LAYER2_NEURONS];
+    // Se reserva el buffer de activaciones positivas de la segunda capa.
+
+    activation_t batch_h2_neg[MODEL_BATCH_SIZE][MODEL_LAYER2_NEURONS];
+    // Se reserva el buffer de activaciones negativas de la segunda capa.
+
+    goodness_t batch_g1_pos[MODEL_BATCH_SIZE];
+    // Se reserva la goodness positiva de la primera capa por muestra.
+
+    goodness_t batch_g1_neg[MODEL_BATCH_SIZE];
+    // Se reserva la goodness negativa de la primera capa por muestra.
+
+    goodness_t batch_g2_pos[MODEL_BATCH_SIZE];
+    // Se reserva la goodness positiva de la segunda capa por muestra.
+
+    goodness_t batch_g2_neg[MODEL_BATCH_SIZE];
+    // Se reserva la goodness negativa de la segunda capa por muestra.
+
+    scale_t batch_pos_scale_l1[MODEL_BATCH_SIZE];
+    // Se reserva la escala sigmoidal positiva de la primera capa.
+
+    scale_t batch_neg_scale_l1[MODEL_BATCH_SIZE];
+    // Se reserva la escala sigmoidal negativa de la primera capa.
+
+    scale_t batch_pos_scale_l2[MODEL_BATCH_SIZE];
+    // Se reserva la escala sigmoidal positiva de la segunda capa.
+
+    scale_t batch_neg_scale_l2[MODEL_BATCH_SIZE];
+    // Se reserva la escala sigmoidal negativa de la segunda capa.
+
+#pragma HLS ARRAY_PARTITION variable=batch_h1_pos cyclic factor=MODEL_PARALLEL_NEURONS dim=2
+    // Se particiona la dimension de neuronas de la capa 1 para reutilizar 8 lanes.
+
+#pragma HLS ARRAY_PARTITION variable=batch_h1_neg cyclic factor=MODEL_PARALLEL_NEURONS dim=2
+    // Se particiona la dimension de neuronas negativas de la capa 1 con la misma estrategia.
+
+#pragma HLS ARRAY_PARTITION variable=batch_h2_pos cyclic factor=MODEL_PARALLEL_NEURONS dim=2
+    // Se particiona la dimension de neuronas de la capa 2 para reutilizar 8 lanes.
+
+#pragma HLS ARRAY_PARTITION variable=batch_h2_neg cyclic factor=MODEL_PARALLEL_NEURONS dim=2
+    // Se particiona la dimension de neuronas negativas de la capa 2 con la misma estrategia.
+
+#pragma HLS BIND_STORAGE variable=batch_pos_inputs type=ram_2p impl=bram
+    // Se fuerza almacenamiento en BRAM para el buffer positivo del batch.
+
+#pragma HLS BIND_STORAGE variable=batch_neg_inputs type=ram_2p impl=bram
+    // Se fuerza almacenamiento en BRAM para el buffer negativo del batch.
+
+#pragma HLS BIND_STORAGE variable=batch_h1_pos type=ram_2p impl=bram
+    // Se almacena el buffer de activaciones positivas de la capa 1 en BRAM.
+
+#pragma HLS BIND_STORAGE variable=batch_h1_neg type=ram_2p impl=bram
+    // Se almacena el buffer de activaciones negativas de la capa 1 en BRAM.
+
+#pragma HLS BIND_STORAGE variable=batch_h2_pos type=ram_2p impl=bram
+    // Se almacena el buffer de activaciones positivas de la capa 2 en BRAM.
+
+#pragma HLS BIND_STORAGE variable=batch_h2_neg type=ram_2p impl=bram
+    // Se almacena el buffer de activaciones negativas de la capa 2 en BRAM.
+
+prepare_layer1_batch_loop:
+    for (int batch_offset = 0; batch_offset < batch_size; batch_offset++) {
+        // Se recorre cada muestra del batch para ejecutar la capa 1 y guardar sus activaciones.
+
+        int sample_idx = batch_start + batch_offset;
+        // Se calcula el indice absoluto de la muestra dentro del subset de entrenamiento.
+
+        raw_sample_t input_sample = load_sample_from_words(in_mem, sample_idx);
+        // Se lee la muestra fisica actual desde memoria externa.
+
+        label_oh_t true_onehot;
+        // Se reserva el contenedor de la etiqueta verdadera.
+
+        pixels_t pixels;
+        // Se reserva el contenedor de la imagen binaria.
+
+        padding_t padding;
+        // Se reserva el contenedor del padding fisico, aunque aqui no se use.
+
+        unpack_sample(input_sample, true_onehot, pixels, padding);
+        // Se desempaqueta la muestra para recuperar label y pixeles.
+
+        label_idx_t true_label_idx = decode_onehot(true_onehot);
+        // Se decodifica la etiqueta correcta de la muestra.
+
+        label_idx_t neg_label_idx = generate_negative_label(true_label_idx, train_state);
+        // Se genera una etiqueta negativa excluyente para esta misma imagen.
+
+        label_oh_t neg_onehot = encode_onehot(neg_label_idx);
+        // Se vuelve a codificar la etiqueta negativa en formato one-hot.
+
+        batch_pos_inputs[batch_offset] = build_ff_input(true_onehot, pixels);
+        // Se construye la entrada positiva con label correcto y label_scale implicito.
+
+        batch_neg_inputs[batch_offset] = build_ff_input(neg_onehot, pixels);
+        // Se construye la entrada negativa con la misma imagen y label incorrecto.
+
+        ff_layer1_forward(
+            batch_pos_inputs[batch_offset],
+            weights_l1,
+            biases_l1,
+            batch_h1_pos[batch_offset],
+            batch_g1_pos[batch_offset]
+        );
+        // Se ejecuta el forward positivo de la primera capa.
+
+        ff_layer1_forward(
+            batch_neg_inputs[batch_offset],
+            weights_l1,
+            biases_l1,
+            batch_h1_neg[batch_offset],
+            batch_g1_neg[batch_offset]
+        );
+        // Se ejecuta el forward negativo de la primera capa.
+
+        goodness_t pos_margin_l1 = GOODNESS_THRESHOLD_HW - batch_g1_pos[batch_offset];
+        // Se calcula el margen positivo usado por sigmoid y softplus en la capa 1.
+
+        goodness_t neg_margin_l1 = batch_g1_neg[batch_offset] - GOODNESS_THRESHOLD_HW;
+        // Se calcula el margen negativo usado por sigmoid y softplus en la capa 1.
+
+        batch_pos_scale_l1[batch_offset] = sigmoid_hw(pos_margin_l1);
+        // Se calcula la escala suave para reforzar positivos por debajo del threshold en la capa 1.
+
+        batch_neg_scale_l1[batch_offset] = sigmoid_hw(neg_margin_l1);
+        // Se calcula la escala suave para suprimir negativos por encima del threshold en la capa 1.
+
+        loss_t loss_pos_l1 = softplus_hw(pos_margin_l1);
+        // Se calcula la perdida FF suave del ejemplo positivo de la capa 1.
+
+        loss_t loss_neg_l1 = softplus_hw(neg_margin_l1);
+        // Se calcula la perdida FF suave del ejemplo negativo de la capa 1.
+
+        epoch_loss_pos_sum = epoch_loss_pos_sum + (stat_accum_t)loss_pos_l1;
+        // Se acumula la perdida positiva local de la capa 1 sobre la epoca.
+
+        epoch_loss_neg_sum = epoch_loss_neg_sum + (stat_accum_t)loss_neg_l1;
+        // Se acumula la perdida negativa local de la capa 1 sobre la epoca.
+
+        epoch_g_pos_sum = epoch_g_pos_sum + (stat_accum_t)batch_g1_pos[batch_offset];
+        // Se acumula la goodness positiva de la capa 1 dentro del score total por muestra.
+
+        epoch_g_neg_sum = epoch_g_neg_sum + (stat_accum_t)batch_g1_neg[batch_offset];
+        // Se acumula la goodness negativa de la capa 1 dentro del score total por muestra.
+    }
+
+    learning_rate_t batch_lr = compute_batch_learning_rate(batch_size);
+    // Se calcula la tasa efectiva normalizada por el tamano real del batch.
+
+update_layer1_tile_loop:
+    for (int tile = 0; tile < MODEL_LAYER1_TILES; tile++) {
+        // Se recorre cada tile de la primera capa para acumular y aplicar la actualizacion del batch.
+
+        update_accum_t weight_delta[MODEL_PARALLEL_NEURONS][MODEL_LAYER1_INPUT_BITS];
+        // Se reserva el acumulador local de dW del tile actual de la capa 1.
+
+        update_accum_t bias_delta[MODEL_PARALLEL_NEURONS];
+        // Se reserva el acumulador local de db del tile actual de la capa 1.
+
+#pragma HLS ARRAY_PARTITION variable=weight_delta complete dim=1
+        // Se particiona completamente la dimension de lanes del delta de pesos.
+
+#pragma HLS ARRAY_PARTITION variable=bias_delta complete
+        // Se particiona completamente el delta de bias del tile.
+
+#pragma HLS BIND_STORAGE variable=weight_delta type=ram_2p impl=bram
+        // Se almacena el delta de pesos del tile en BRAM para reducir registros.
+
+zero_layer1_lane_loop:
+        for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+            // Se inicializan en paralelo los acumuladores de bias de cada lane.
+
+            bias_delta[lane] = (update_accum_t)0;
+            // Se limpia el acumulador de bias del lane actual.
+
+zero_layer1_input_loop:
+            for (int input_idx = 0; input_idx < MODEL_LAYER1_INPUT_BITS; input_idx++) {
+#pragma HLS PIPELINE II=1
+                // Se limpia el acumulador de pesos con pipeline para no inflar la latencia.
+
+                weight_delta[lane][input_idx] = (update_accum_t)0;
+                // Se limpia el acumulador de la conexion actual del tile.
+            }
+        }
+
+accumulate_layer1_batch_loop:
+        for (int batch_offset = 0; batch_offset < batch_size; batch_offset++) {
+            // Se recorre el batch y se acumulan las correlaciones ponderadas de la capa 1.
+
+            accumulate_layer1_tile_update(
+                batch_pos_inputs[batch_offset],
+                batch_neg_inputs[batch_offset],
+                batch_h1_pos[batch_offset],
+                batch_h1_neg[batch_offset],
+                batch_pos_scale_l1[batch_offset],
+                batch_neg_scale_l1[batch_offset],
+                weight_delta,
+                bias_delta,
+                tile
+            );
+            // Se aplica la regla local del notebook sobre la primera capa.
+        }
+
+        apply_dense_tile_update<MODEL_LAYER1_INPUT_BITS, MODEL_LAYER1_NEURONS>(
+            weights_l1,
+            biases_l1,
+            weight_delta,
+            bias_delta,
+            batch_lr,
+            tile
+        );
+        // Se escribe la actualizacion acumulada sobre la primera capa.
+    }
+
+prepare_layer2_batch_loop:
+    for (int batch_offset = 0; batch_offset < batch_size; batch_offset++) {
+        // Se recorre cada muestra del batch para ejecutar la capa 2 usando las activaciones de la capa 1.
+
+        ff_layer_forward_dense<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS, MODEL_LAYER2_TILES>(
+            batch_h1_pos[batch_offset],
+            weights_l2,
+            biases_l2,
+            batch_h2_pos[batch_offset],
+            batch_g2_pos[batch_offset]
+        );
+        // Se ejecuta el forward positivo de la segunda capa.
+
+        ff_layer_forward_dense<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS, MODEL_LAYER2_TILES>(
+            batch_h1_neg[batch_offset],
+            weights_l2,
+            biases_l2,
+            batch_h2_neg[batch_offset],
+            batch_g2_neg[batch_offset]
+        );
+        // Se ejecuta el forward negativo de la segunda capa.
+
+        goodness_t pos_margin_l2 = GOODNESS_THRESHOLD_HW - batch_g2_pos[batch_offset];
+        // Se calcula el margen positivo usado por sigmoid y softplus en la capa 2.
+
+        goodness_t neg_margin_l2 = batch_g2_neg[batch_offset] - GOODNESS_THRESHOLD_HW;
+        // Se calcula el margen negativo usado por sigmoid y softplus en la capa 2.
+
+        batch_pos_scale_l2[batch_offset] = sigmoid_hw(pos_margin_l2);
+        // Se calcula la escala suave para reforzar positivos por debajo del threshold en la capa 2.
+
+        batch_neg_scale_l2[batch_offset] = sigmoid_hw(neg_margin_l2);
+        // Se calcula la escala suave para suprimir negativos por encima del threshold en la capa 2.
+
+        loss_t loss_pos_l2 = softplus_hw(pos_margin_l2);
+        // Se calcula la perdida FF suave del ejemplo positivo de la capa 2.
+
+        loss_t loss_neg_l2 = softplus_hw(neg_margin_l2);
+        // Se calcula la perdida FF suave del ejemplo negativo de la capa 2.
+
+        epoch_loss_pos_sum = epoch_loss_pos_sum + (stat_accum_t)loss_pos_l2;
+        // Se acumula la perdida positiva local de la capa 2 sobre la epoca.
+
+        epoch_loss_neg_sum = epoch_loss_neg_sum + (stat_accum_t)loss_neg_l2;
+        // Se acumula la perdida negativa local de la capa 2 sobre la epoca.
+
+        epoch_g_pos_sum = epoch_g_pos_sum + (stat_accum_t)batch_g2_pos[batch_offset];
+        // Se acumula la goodness positiva de la capa 2 dentro del score total por muestra.
+
+        epoch_g_neg_sum = epoch_g_neg_sum + (stat_accum_t)batch_g2_neg[batch_offset];
+        // Se acumula la goodness negativa de la capa 2 dentro del score total por muestra.
+
+        if (capture_sample_metrics == true) {
+            int sample_idx = batch_start + batch_offset;
+            // Se calcula el indice absoluto de la muestra cuando se guardan trazas de la ultima epoca.
+
+            goodness_t total_g_pos = batch_g1_pos[batch_offset] + batch_g2_pos[batch_offset];
+            // Se forma la goodness total positiva como g1 + g2.
+
+            goodness_t total_g_neg = batch_g1_neg[batch_offset] + batch_g2_neg[batch_offset];
+            // Se forma la goodness total negativa como g1 + g2.
+
+            g_pos_mem[sample_idx] = total_g_pos;
+            // Se guarda la goodness positiva total de la ultima epoca para trazas del testbench.
+
+            g_neg_mem[sample_idx] = total_g_neg;
+            // Se guarda la goodness negativa total de la ultima epoca para trazas del testbench.
+
+            gap_mem[sample_idx] = total_g_pos - total_g_neg;
+            // Se guarda el goodness gap total individual de la ultima epoca.
+        }
+    }
+
+update_layer2_tile_loop:
+    for (int tile = 0; tile < MODEL_LAYER2_TILES; tile++) {
+        // Se recorre cada tile de la segunda capa para acumular y aplicar la actualizacion del batch.
+
+        update_accum_t weight_delta[MODEL_PARALLEL_NEURONS][MODEL_LAYER2_INPUT_BITS];
+        // Se reserva el acumulador local de dW del tile actual de la capa 2.
+
+        update_accum_t bias_delta[MODEL_PARALLEL_NEURONS];
+        // Se reserva el acumulador local de db del tile actual de la capa 2.
+
+#pragma HLS ARRAY_PARTITION variable=weight_delta complete dim=1
+        // Se particiona completamente la dimension de lanes del delta de pesos.
+
+#pragma HLS ARRAY_PARTITION variable=bias_delta complete
+        // Se particiona completamente el delta de bias del tile.
+
+#pragma HLS BIND_STORAGE variable=weight_delta type=ram_2p impl=bram
+        // Se almacena el delta de pesos del tile en BRAM para reducir registros.
+
+zero_layer2_lane_loop:
+        for (int lane = 0; lane < MODEL_PARALLEL_NEURONS; lane++) {
+#pragma HLS UNROLL
+            // Se inicializan en paralelo los acumuladores de bias de cada lane de la capa 2.
+
+            bias_delta[lane] = (update_accum_t)0;
+            // Se limpia el acumulador de bias del lane actual.
+
+zero_layer2_input_loop:
+            for (int input_idx = 0; input_idx < MODEL_LAYER2_INPUT_BITS; input_idx++) {
+#pragma HLS PIPELINE II=1
+                // Se limpia el acumulador de pesos con pipeline para no inflar la latencia.
+
+                weight_delta[lane][input_idx] = (update_accum_t)0;
+                // Se limpia el acumulador de la conexion actual del tile.
+            }
+        }
+
+accumulate_layer2_batch_loop:
+        for (int batch_offset = 0; batch_offset < batch_size; batch_offset++) {
+            // Se recorre el batch y se acumulan las correlaciones ponderadas de la capa 2.
+
+            accumulate_dense_tile_update<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS>(
+                batch_h1_pos[batch_offset],
+                batch_h1_neg[batch_offset],
+                batch_h2_pos[batch_offset],
+                batch_h2_neg[batch_offset],
+                batch_pos_scale_l2[batch_offset],
+                batch_neg_scale_l2[batch_offset],
+                weight_delta,
+                bias_delta,
+                tile
+            );
+            // Se aplica la regla local del notebook sobre la segunda capa.
+        }
+
+        apply_dense_tile_update<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS>(
+            weights_l2,
+            biases_l2,
+            weight_delta,
+            bias_delta,
+            batch_lr,
+            tile
+        );
+        // Se escribe la actualizacion acumulada sobre la segunda capa.
     }
 }
 
@@ -547,88 +1187,152 @@ lane_bias_update_loop:
 // ============================================================
 static label_idx_t ff_predict_label(
     pixels_t pixels,
-    latent_t weights[MODEL_NEURONS][MODEL_INPUT_BITS],
-    bias_t biases[MODEL_NEURONS]
+    latent_t weights_l1[MODEL_LAYER1_NEURONS][MODEL_LAYER1_INPUT_BITS],
+    bias_t biases_l1[MODEL_LAYER1_NEURONS],
+    latent_t weights_l2[MODEL_LAYER2_NEURONS][MODEL_LAYER2_INPUT_BITS],
+    bias_t biases_l2[MODEL_LAYER2_NEURONS]
 ) {
-#pragma HLS INLINE off
-    // Se evita inline total para concentrar el bloque de inferencia multiclase en una sola instancia reutilizable.
+#pragma HLS inline off
+    // Se evita inline para mantener una unica instancia del bloque de inferencia multicapas.
 
     label_idx_t best_label = 0;
-    // Se inicializa la mejor clase en cero antes de evaluar todas las posibilidades.
+    // Se inicializa la clase ganadora provisional en cero.
 
-    goodness_t best_goodness = (goodness_t)-1;
-    // Se inicializa el mejor puntaje con un valor menor que cualquier goodness válida.
+    goodness_t best_score = (goodness_t)0;
+    // Se inicializa el mejor score total con cero.
 
-    activation_t activations_local[MODEL_NEURONS];
-    // Se reserva un arreglo local para almacenar las activaciones temporales de cada hipótesis de clase.
+    activation_t h1_local[MODEL_LAYER1_NEURONS];
+    // Se reserva un buffer temporal de activaciones para la primera capa.
 
-#pragma HLS ARRAY_PARTITION variable=activations_local cyclic factor=MODEL_PARALLEL_NEURONS dim=1
-    // Se particiona cíclicamente el buffer de activaciones para facilitar el uso paralelo por tiles.
+    activation_t h2_local[MODEL_LAYER2_NEURONS];
+    // Se reserva un buffer temporal de activaciones para la segunda capa.
 
-label_hypothesis_loop:
+#pragma HLS ARRAY_PARTITION variable=h1_local cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona el buffer temporal de la capa 1 para reutilizar el paralelismo de 8 lanes.
+
+#pragma HLS ARRAY_PARTITION variable=h2_local cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona el buffer temporal de la capa 2 para reutilizar el paralelismo de 8 lanes.
+
+candidate_loop:
     for (int candidate = 0; candidate < NUM_CLASSES; candidate++) {
-        // Se prueban una por una las diez etiquetas posibles para la imagen dada.
+        // Se prueban una por una las 10 hipotesis de etiqueta posibles.
 
         label_oh_t candidate_onehot = encode_onehot((label_idx_t)candidate);
-        // Se construye la hipótesis de etiqueta actual en formato one-hot.
+        // Se construye el label one-hot de la hipotesis actual.
 
         ff_input_t candidate_input = build_ff_input(candidate_onehot, pixels);
-        // Se construye la entrada FF lógica para esa etiqueta candidata y la misma imagen.
+        // Se construye la entrada completa con label incrustado y misma imagen.
 
-        goodness_t candidate_goodness = 0;
-        // Se crea una variable local para la goodness obtenida con la hipótesis actual.
+        goodness_t g1_score = 0;
+        // Se reserva la goodness local de la primera capa para la hipotesis actual.
 
-        ff_layer_forward(candidate_input, weights, biases, activations_local, candidate_goodness);
-        // Se ejecuta el forward local de la capa entrenada para medir la goodness de la hipótesis actual.
+        goodness_t g2_score = 0;
+        // Se reserva la goodness local de la segunda capa para la hipotesis actual.
 
-        if ((candidate == 0) || (candidate_goodness > best_goodness)) {
-            best_goodness = candidate_goodness;
-            // Si la goodness actual supera a la mejor previa, se actualiza el mejor puntaje observado.
+        ff_layer1_forward(candidate_input, weights_l1, biases_l1, h1_local, g1_score);
+        // Se mide la goodness de la primera capa para la hipotesis actual.
+
+        ff_layer_forward_dense<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS, MODEL_LAYER2_TILES>(
+            h1_local,
+            weights_l2,
+            biases_l2,
+            h2_local,
+            g2_score
+        );
+        // Se mide la goodness de la segunda capa usando la activacion de la primera.
+
+        goodness_t candidate_score = g1_score + g2_score;
+        // Se forma el score total tal como en el notebook: g_total = g1 + g2.
+
+        if ((candidate == 0) || (candidate_score > best_score)) {
+            best_score = candidate_score;
+            // Se actualiza el mejor score cuando la hipotesis actual supera a la previa.
 
             best_label = (label_idx_t)candidate;
-            // También se actualiza la clase ganadora provisional del proceso de argmax.
+            // Se actualiza la etiqueta ganadora provisional.
         }
     }
 
     return best_label;
-    // Se retorna la clase cuya hipótesis produjo la mayor goodness total de la capa.
+    // Se retorna la clase que produce la mayor goodness total del modelo.
 }
 
 // ============================================================
-// Copia del modelo a memoria externa para inspección en testbench
+// Copia de una capa densa a memoria externa
+// ============================================================
+template <int INPUT_DIM, int OUTPUT_DIM>
+static int snapshot_dense_layer(
+    latent_t weights[OUTPUT_DIM][INPUT_DIM],
+    bias_t biases[OUTPUT_DIM],
+    latent_t *weight_mem_out,
+    bias_t *bias_mem_out,
+    int weight_base,
+    int bias_base
+) {
+#pragma HLS inline off
+    // Se evita inline para mantener una sola rutina de volcado para cualquier capa.
+
+snapshot_dense_weight_loop:
+    for (int neuron = 0; neuron < OUTPUT_DIM; neuron++) {
+        // Se recorre cada neurona del modelo entrenado en la capa actual.
+
+snapshot_dense_input_loop:
+        for (int input_idx = 0; input_idx < INPUT_DIM; input_idx++) {
+#pragma HLS PIPELINE II=1
+            // Se pipelinea el volcado lineal del snapshot a memoria externa.
+
+            int flat_index = weight_base + neuron * INPUT_DIM + input_idx;
+            // Se linealiza el indice bidimensional para el buffer externo global.
+
+            weight_mem_out[flat_index] = weights[neuron][input_idx];
+            // Se copia el peso latente al snapshot externo.
+        }
+
+        bias_mem_out[bias_base + neuron] = biases[neuron];
+        // Se copia el bias latente al snapshot externo respetando el offset de la capa.
+    }
+
+    return weight_base + (OUTPUT_DIM * INPUT_DIM);
+    // Se retorna el siguiente offset disponible dentro del snapshot global de pesos.
+}
+
+// ============================================================
+// Copia del modelo multicapa a memoria externa
 // ============================================================
 static void snapshot_model(
-    latent_t weights[MODEL_NEURONS][MODEL_INPUT_BITS],
-    bias_t biases[MODEL_NEURONS],
+    latent_t weights_l1[MODEL_LAYER1_NEURONS][MODEL_LAYER1_INPUT_BITS],
+    bias_t biases_l1[MODEL_LAYER1_NEURONS],
+    latent_t weights_l2[MODEL_LAYER2_NEURONS][MODEL_LAYER2_INPUT_BITS],
+    bias_t biases_l2[MODEL_LAYER2_NEURONS],
     latent_t *weight_mem_out,
     bias_t *bias_mem_out
 ) {
-#pragma HLS INLINE off
-    // Se evita inline total para mantener una sola rutina clara de extracción del estado entrenado.
+#pragma HLS inline off
+    // Se evita inline para mantener una unica rutina de volcado del estado entrenado multicapa.
 
-snapshot_weight_loop:
-    for (int neuron = 0; neuron < MODEL_NEURONS; neuron++) {
-        // Se recorre cada neurona para volcar sus pesos y bias a memoria externa de depuración.
+    int next_weight_base = snapshot_dense_layer<MODEL_LAYER1_INPUT_BITS, MODEL_LAYER1_NEURONS>(
+        weights_l1,
+        biases_l1,
+        weight_mem_out,
+        bias_mem_out,
+        0,
+        0
+    );
+    // Se vuelca primero la primera capa al inicio del snapshot global.
 
-snapshot_input_loop:
-        for (int input_idx = 0; input_idx < MODEL_INPUT_BITS; input_idx++) {
-#pragma HLS PIPELINE II=1
-            // Se pipelinea el recorrido lineal del snapshot para hacerlo eficiente sin desplegar memoria masiva.
-
-            int flat_index = neuron * MODEL_INPUT_BITS + input_idx;
-            // Se linealiza el índice bidimensional del peso para escribirlo en un buffer unidimensional.
-
-            weight_mem_out[flat_index] = weights[neuron][input_idx];
-            // Se copia el peso latente actual al buffer externo de snapshot.
-        }
-
-        bias_mem_out[neuron] = biases[neuron];
-        // Se copia el bias latente de la neurona actual al buffer externo de snapshot.
-    }
+    snapshot_dense_layer<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS>(
+        weights_l2,
+        biases_l2,
+        weight_mem_out,
+        bias_mem_out,
+        next_weight_base,
+        MODEL_LAYER1_NEURONS
+    );
+    // Se vuelca despues la segunda capa justo a continuacion de la primera.
 }
 
 // ============================================================
-// Top sintetizable heredado de la Etapa B
+// Top heredado de Etapa B
 // ============================================================
 void forward_fw_top(
     const word_t *in_mem,
@@ -639,99 +1343,102 @@ void forward_fw_top(
     int n_samples,
     uint16_t seed
 ) {
-#pragma HLS INTERFACE m_axi     port=in_mem         offset=slave bundle=gmem0
-    // Se declara un puerto AXI maestro de lectura para el dataset de entrada ya congelado.
+#pragma HLS INTERFACE m_axi port=in_mem offset=slave bundle=gmem0
+    // Se expone la memoria de entrada del dataset congelado.
 
-#pragma HLS INTERFACE m_axi     port=pos_mem        offset=slave bundle=gmem1
-    // Se declara un puerto AXI maestro de escritura para las muestras positivas reconstruidas.
+#pragma HLS INTERFACE m_axi port=pos_mem offset=slave bundle=gmem1
+    // Se expone la memoria de salida de muestras positivas.
 
-#pragma HLS INTERFACE m_axi     port=neg_mem        offset=slave bundle=gmem2
-    // Se declara un puerto AXI maestro de escritura para las muestras negativas reconstruidas.
+#pragma HLS INTERFACE m_axi port=neg_mem offset=slave bundle=gmem2
+    // Se expone la memoria de salida de muestras negativas.
 
-#pragma HLS INTERFACE m_axi     port=true_label_mem offset=slave bundle=gmem3
-    // Se declara un puerto AXI maestro de escritura para los labels verdaderos decodificados.
+#pragma HLS INTERFACE m_axi port=true_label_mem offset=slave bundle=gmem3
+    // Se expone la memoria de salida de labels verdaderos.
 
-#pragma HLS INTERFACE m_axi     port=neg_label_mem  offset=slave bundle=gmem4
-    // Se declara un puerto AXI maestro de escritura para los labels negativos generados.
+#pragma HLS INTERFACE m_axi port=neg_label_mem offset=slave bundle=gmem4
+    // Se expone la memoria de salida de labels negativos.
 
-#pragma HLS INTERFACE s_axilite port=in_mem         bundle=control
-    // Se expone el puntero de entrada por AXI-Lite para control desde host o testbench.
+#pragma HLS INTERFACE s_axilite port=in_mem bundle=control
+    // Se expone el puntero de entrada por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=pos_mem        bundle=control
-    // Se expone el puntero de salida positiva por AXI-Lite para control.
+#pragma HLS INTERFACE s_axilite port=pos_mem bundle=control
+    // Se expone el puntero de salida positiva por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=neg_mem        bundle=control
-    // Se expone el puntero de salida negativa por AXI-Lite para control.
+#pragma HLS INTERFACE s_axilite port=neg_mem bundle=control
+    // Se expone el puntero de salida negativa por AXI-Lite.
 
 #pragma HLS INTERFACE s_axilite port=true_label_mem bundle=control
-    // Se expone el puntero de labels verdaderos por AXI-Lite para control.
+    // Se expone el puntero de labels verdaderos por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=neg_label_mem  bundle=control
-    // Se expone el puntero de labels negativos por AXI-Lite para control.
+#pragma HLS INTERFACE s_axilite port=neg_label_mem bundle=control
+    // Se expone el puntero de labels negativos por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=n_samples      bundle=control
-    // Se expone el número de muestras a procesar como registro de control.
+#pragma HLS INTERFACE s_axilite port=n_samples bundle=control
+    // Se expone la cantidad de muestras a procesar.
 
-#pragma HLS INTERFACE s_axilite port=seed           bundle=control
-    // Se expone la semilla inicial del generador pseudoaleatorio como registro de control.
+#pragma HLS INTERFACE s_axilite port=seed bundle=control
+    // Se expone la semilla del LFSR por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=return         bundle=control
-    // Se declara el puerto de retorno AXI-Lite obligatorio para una función top de HLS.
+#pragma HLS INTERFACE s_axilite port=return bundle=control
+    // Se declara el puerto de retorno obligatorio del top HLS.
+
+    int effective_samples = (n_samples < 0) ? 0 : n_samples;
+    // Se sanea la cantidad de muestras para evitar lazos invalidos.
 
     lfsr_t prng_state = (seed == 0) ? (lfsr_t)0xACE1 : (lfsr_t)seed;
-    // Se inicializa el estado pseudoaleatorio con la semilla dada o con una fija si se recibe cero.
+    // Se inicializa el generador pseudoaleatorio de etiquetas negativas.
 
 pair_prepare_loop:
-    for (int sample_idx = 0; sample_idx < n_samples; sample_idx++) {
+    for (int sample_idx = 0; sample_idx < effective_samples; sample_idx++) {
 #pragma HLS PIPELINE II=1
-        // Se pipelinea el procesamiento por muestra para maximizar throughput en esta etapa ya validada.
+        // Se pipelinea la preparacion heredada de pares FF.
 
         raw_sample_t input_sample = load_sample_from_words(in_mem, sample_idx);
-        // Se lee la muestra física actual desde memoria externa y se reconstruye en un solo vector de 800 bits.
+        // Se carga la muestra fisica actual desde memoria externa.
 
         label_oh_t input_label_onehot;
-        // Se reserva el contenedor para el label original extraído de la muestra.
+        // Se reserva el label original de la muestra.
 
         pixels_t input_pixels;
-        // Se reserva el contenedor para la imagen binaria extraída de la muestra.
+        // Se reserva la imagen binaria de la muestra.
 
         padding_t input_padding;
-        // Se reserva el contenedor para el padding físico asociado a la muestra.
+        // Se reserva el padding fisico de la muestra.
 
         unpack_sample(input_sample, input_label_onehot, input_pixels, input_padding);
-        // Se separan el label, la imagen y el padding sin modificar el dataset congelado.
+        // Se desempaqueta la muestra original.
 
         label_idx_t true_label_idx = decode_onehot(input_label_onehot);
-        // Se decodifica el label verdadero a índice entero para depuración y control.
+        // Se decodifica la clase verdadera de la muestra.
 
         label_idx_t neg_label_idx = generate_negative_label(true_label_idx, prng_state);
-        // Se genera una etiqueta negativa excluyente usando el LFSR ya validado en la Etapa B.
+        // Se genera una clase incorrecta excluyente para la muestra.
 
         label_oh_t neg_label_onehot = encode_onehot(neg_label_idx);
-        // Se convierte la etiqueta negativa al mismo formato one-hot del dataset original.
+        // Se codifica la clase negativa en formato one-hot.
 
         raw_sample_t positive_sample = pack_sample(input_label_onehot, input_pixels, input_padding);
-        // Se construye la muestra positiva manteniendo intacta la misma imagen y el mismo padding.
+        // Se reconstruye la muestra positiva preservando imagen y padding.
 
         raw_sample_t negative_sample = pack_sample(neg_label_onehot, input_pixels, input_padding);
-        // Se construye la muestra negativa cambiando únicamente la etiqueta y preservando el resto.
+        // Se reconstruye la muestra negativa cambiando solo la etiqueta.
 
         store_sample_to_words(pos_mem, sample_idx, positive_sample);
-        // Se escribe la muestra positiva en la memoria externa de salida positiva.
+        // Se almacena la muestra positiva en memoria externa.
 
         store_sample_to_words(neg_mem, sample_idx, negative_sample);
-        // Se escribe la muestra negativa en la memoria externa de salida negativa.
+        // Se almacena la muestra negativa en memoria externa.
 
         true_label_mem[sample_idx] = true_label_idx;
-        // Se guarda el índice de la clase verdadera para uso posterior en testbench.
+        // Se guarda la clase verdadera para validacion en testbench.
 
         neg_label_mem[sample_idx] = neg_label_idx;
-        // Se guarda el índice de la clase negativa generada para uso posterior en testbench.
+        // Se guarda la clase negativa generada para validacion en testbench.
     }
 }
 
 // ============================================================
-// Top sintetizable nuevo de la Etapa C
+// Top entrenable de Etapa C
 // ============================================================
 void ff_train_top(
     const word_t *in_mem,
@@ -742,6 +1449,11 @@ void ff_train_top(
     goodness_t *g_pos_mem,
     goodness_t *g_neg_mem,
     goodness_t *gap_mem,
+    loss_t *epoch_loss_pos_mem,
+    loss_t *epoch_loss_neg_mem,
+    goodness_t *epoch_g_pos_mem,
+    goodness_t *epoch_g_neg_mem,
+    goodness_t *epoch_gap_mem,
     ap_uint<32> *correct_count_mem,
     int n_samples,
     int n_train_samples,
@@ -749,269 +1461,340 @@ void ff_train_top(
     uint16_t seed,
     bool reset_model
 ) {
-#pragma HLS INTERFACE m_axi     port=in_mem            offset=slave bundle=gmem0
-    // Se declara el puerto AXI maestro de lectura para el dataset FF congelado en memoria externa.
+#pragma HLS INTERFACE m_axi port=in_mem offset=slave bundle=gmem0
+    // Se expone la memoria de entrada del dataset FF congelado.
 
-#pragma HLS INTERFACE m_axi     port=true_label_mem    offset=slave bundle=gmem1
-    // Se declara el puerto AXI maestro de escritura para labels verdaderos usados en métricas.
+#pragma HLS INTERFACE m_axi port=true_label_mem offset=slave bundle=gmem1
+    // Se expone la memoria de salida de labels verdaderos para inferencia.
 
-#pragma HLS INTERFACE m_axi     port=pred_label_mem    offset=slave bundle=gmem2
-    // Se declara el puerto AXI maestro de escritura para predicciones multiclase posteriores al entrenamiento.
+#pragma HLS INTERFACE m_axi port=pred_label_mem offset=slave bundle=gmem2
+    // Se expone la memoria de salida de predicciones multiclase.
 
-#pragma HLS INTERFACE m_axi     port=weight_mem_out    offset=slave bundle=gmem3
-    // Se declara el puerto AXI maestro de escritura para el snapshot final de pesos latentes.
+#pragma HLS INTERFACE m_axi port=weight_mem_out offset=slave bundle=gmem3
+    // Se expone la memoria de salida del snapshot de pesos.
 
-#pragma HLS INTERFACE m_axi     port=bias_mem_out      offset=slave bundle=gmem4
-    // Se declara el puerto AXI maestro de escritura para el snapshot final de bias latentes.
+#pragma HLS INTERFACE m_axi port=bias_mem_out offset=slave bundle=gmem4
+    // Se expone la memoria de salida del snapshot de bias.
 
-#pragma HLS INTERFACE m_axi     port=g_pos_mem         offset=slave bundle=gmem5
-    // Se declara el puerto AXI maestro de escritura para goodness positiva por muestra en la última época.
+#pragma HLS INTERFACE m_axi port=g_pos_mem offset=slave bundle=gmem5
+    // Se expone la memoria de salida de goodness positiva por muestra.
 
-#pragma HLS INTERFACE m_axi     port=g_neg_mem         offset=slave bundle=gmem6
-    // Se declara el puerto AXI maestro de escritura para goodness negativa por muestra en la última época.
+#pragma HLS INTERFACE m_axi port=g_neg_mem offset=slave bundle=gmem6
+    // Se expone la memoria de salida de goodness negativa por muestra.
 
-#pragma HLS INTERFACE m_axi     port=gap_mem           offset=slave bundle=gmem7
-    // Se declara el puerto AXI maestro de escritura para el goodness gap por muestra en la última época.
+#pragma HLS INTERFACE m_axi port=gap_mem offset=slave bundle=gmem7
+    // Se expone la memoria de salida del goodness gap por muestra.
 
-#pragma HLS INTERFACE m_axi     port=correct_count_mem offset=slave bundle=gmem8
-    // Se declara el puerto AXI maestro de escritura para el conteo de aciertos tras la inferencia.
+#pragma HLS INTERFACE m_axi port=epoch_loss_pos_mem offset=slave bundle=gmem8
+    // Se expone la memoria de salida del historial de perdida positiva.
 
-#pragma HLS INTERFACE s_axilite port=in_mem            bundle=control
-    // Se expone el puntero de entrada a través de AXI-Lite para control de alto nivel.
+#pragma HLS INTERFACE m_axi port=epoch_loss_neg_mem offset=slave bundle=gmem9
+    // Se expone la memoria de salida del historial de perdida negativa.
 
-#pragma HLS INTERFACE s_axilite port=true_label_mem    bundle=control
-    // Se expone el puntero de salida de labels verdaderos por AXI-Lite.
+#pragma HLS INTERFACE m_axi port=epoch_g_pos_mem offset=slave bundle=gmem10
+    // Se expone la memoria de salida del historial de goodness positiva.
 
-#pragma HLS INTERFACE s_axilite port=pred_label_mem    bundle=control
-    // Se expone el puntero de salida de predicciones por AXI-Lite.
+#pragma HLS INTERFACE m_axi port=epoch_g_neg_mem offset=slave bundle=gmem11
+    // Se expone la memoria de salida del historial de goodness negativa.
 
-#pragma HLS INTERFACE s_axilite port=weight_mem_out    bundle=control
-    // Se expone el puntero de salida del snapshot de pesos por AXI-Lite.
+#pragma HLS INTERFACE m_axi port=epoch_gap_mem offset=slave bundle=gmem12
+    // Se expone la memoria de salida del historial de goodness gap.
 
-#pragma HLS INTERFACE s_axilite port=bias_mem_out      bundle=control
-    // Se expone el puntero de salida del snapshot de bias por AXI-Lite.
+#pragma HLS INTERFACE m_axi port=correct_count_mem offset=slave bundle=gmem13
+    // Se expone la memoria de salida del contador de aciertos.
 
-#pragma HLS INTERFACE s_axilite port=g_pos_mem         bundle=control
-    // Se expone el puntero de salida de goodness positiva por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=in_mem bundle=control
+    // Se expone el puntero de entrada por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=g_neg_mem         bundle=control
-    // Se expone el puntero de salida de goodness negativa por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=true_label_mem bundle=control
+    // Se expone el puntero de labels verdaderos por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=gap_mem           bundle=control
-    // Se expone el puntero de salida de goodness gap por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=pred_label_mem bundle=control
+    // Se expone el puntero de predicciones por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=weight_mem_out bundle=control
+    // Se expone el puntero del snapshot de pesos por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=bias_mem_out bundle=control
+    // Se expone el puntero del snapshot de bias por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=g_pos_mem bundle=control
+    // Se expone el puntero de goodness positiva por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=g_neg_mem bundle=control
+    // Se expone el puntero de goodness negativa por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=gap_mem bundle=control
+    // Se expone el puntero de goodness gap por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=epoch_loss_pos_mem bundle=control
+    // Se expone el puntero del historial de perdida positiva por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=epoch_loss_neg_mem bundle=control
+    // Se expone el puntero del historial de perdida negativa por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=epoch_g_pos_mem bundle=control
+    // Se expone el puntero del historial de goodness positiva por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=epoch_g_neg_mem bundle=control
+    // Se expone el puntero del historial de goodness negativa por AXI-Lite.
+
+#pragma HLS INTERFACE s_axilite port=epoch_gap_mem bundle=control
+    // Se expone el puntero del historial de goodness gap por AXI-Lite.
 
 #pragma HLS INTERFACE s_axilite port=correct_count_mem bundle=control
     // Se expone el puntero del contador de aciertos por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=n_samples         bundle=control
-    // Se expone la cantidad de muestras a inferir y reportar por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=n_samples bundle=control
+    // Se expone la cantidad de muestras a inferir.
 
-#pragma HLS INTERFACE s_axilite port=n_train_samples   bundle=control
-    // Se expone la cantidad de muestras usadas para entrenamiento por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=n_train_samples bundle=control
+    // Se expone la cantidad de muestras a entrenar.
 
-#pragma HLS INTERFACE s_axilite port=n_epochs          bundle=control
-    // Se expone la cantidad de épocas de entrenamiento local por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=n_epochs bundle=control
+    // Se expone la cantidad de epocas de entrenamiento.
 
-#pragma HLS INTERFACE s_axilite port=seed             bundle=control
-    // Se expone la semilla inicial del pseudoaleatorio por AXI-Lite.
+#pragma HLS INTERFACE s_axilite port=seed bundle=control
+    // Se expone la semilla de entrenamiento por AXI-Lite.
 
-#pragma HLS INTERFACE s_axilite port=reset_model      bundle=control
-    // Se expone la orden de reinicialización del modelo por AXI-Lite para controlar el estado entrenable persistente.
+#pragma HLS INTERFACE s_axilite port=reset_model bundle=control
+    // Se expone la orden de reset del estado persistente del modelo.
 
-#pragma HLS INTERFACE s_axilite port=return           bundle=control
-    // Se declara el puerto de retorno AXI-Lite obligatorio para una función top sintetizable.
+#pragma HLS INTERFACE s_axilite port=return bundle=control
+    // Se declara el puerto de retorno obligatorio del top HLS.
 
-    static latent_t model_weights[MODEL_NEURONS][MODEL_INPUT_BITS];
-    // Se declara la memoria interna persistente de pesos latentes que se materializará preferentemente en BRAM.
+    static latent_t model_weights_l1[MODEL_LAYER1_NEURONS][MODEL_LAYER1_INPUT_BITS];
+    // Se declara la memoria persistente de pesos latentes de la primera capa.
 
-    static bias_t model_biases[MODEL_NEURONS];
-    // Se declara la memoria interna persistente de bias latentes del modelo entrenable.
+    static bias_t model_biases_l1[MODEL_LAYER1_NEURONS];
+    // Se declara la memoria persistente de bias latentes de la primera capa.
+
+    static latent_t model_weights_l2[MODEL_LAYER2_NEURONS][MODEL_LAYER2_INPUT_BITS];
+    // Se declara la memoria persistente de pesos latentes de la segunda capa.
+
+    static bias_t model_biases_l2[MODEL_LAYER2_NEURONS];
+    // Se declara la memoria persistente de bias latentes de la segunda capa.
 
     static bool model_initialized = false;
-    // Se declara un flag persistente que indica si el estado del modelo ya fue inicializado al menos una vez.
+    // Se declara la bandera persistente de inicializacion del modelo.
 
-#pragma HLS ARRAY_PARTITION variable=model_weights cyclic factor=MODEL_PARALLEL_NEURONS dim=1
-    // Se particiona cíclicamente la dimensión de neuronas para que 8 lanes puedan leerse y actualizarse en paralelo.
+    // No se fija aqui un bind_storage rigido a BRAM para los pesos del modelo multicapa.
+    // La arquitectura 794 -> 512 -> 256 es mucho mayor que la version monolayer y deja abierta
+    // una futura migracion del estado latente a DDR o a otra estrategia de almacenamiento.
 
-#pragma HLS ARRAY_PARTITION variable=model_biases cyclic factor=MODEL_PARALLEL_NEURONS dim=1
-    // Se particiona cíclicamente el vector de bias por la misma razón de paralelismo por tile.
+#pragma HLS ARRAY_PARTITION variable=model_weights_l1 cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona la dimension de neuronas de la primera capa para sostener 8 lanes en paralelo.
 
-#pragma HLS BIND_STORAGE variable=model_weights type=ram_2p impl=bram
-    // Se sugiere mapear la matriz de pesos a BRAM de doble puerto para balancear capacidad y accesos concurrentes.
+#pragma HLS ARRAY_PARTITION variable=model_biases_l1 cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona el vector de bias de la primera capa con la misma granularidad de lanes.
 
-#pragma HLS BIND_STORAGE variable=model_biases type=ram_2p impl=bram
-    // Se sugiere mapear el vector de bias a BRAM para mantener el estado entrenable dentro del FPGA.
+#pragma HLS ARRAY_PARTITION variable=model_weights_l2 cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona la dimension de neuronas de la segunda capa para sostener 8 lanes en paralelo.
 
-    int effective_samples = n_samples;
-    // Se crea una copia local de la cantidad de muestras para aplicar saneamiento de límites.
+#pragma HLS ARRAY_PARTITION variable=model_biases_l2 cyclic factor=MODEL_PARALLEL_NEURONS dim=1
+    // Se particiona el vector de bias de la segunda capa con la misma granularidad de lanes.
 
-    int effective_train_samples = n_train_samples;
-    // Se crea una copia local de la cantidad de muestras de entrenamiento para aplicar saneamiento de límites.
+    int effective_eval_samples = (n_samples < 0) ? 0 : n_samples;
+    // Se sanea la cantidad de muestras de inferencia.
 
-    if (effective_samples < 0) {
-        effective_samples = 0;
-        // Se corrige cualquier valor negativo de muestras totales a cero para evitar lazos inválidos.
-    }
+    int effective_train_samples = (n_train_samples < 0) ? 0 : n_train_samples;
+    // Se sanea la cantidad de muestras de entrenamiento.
 
-    if (effective_train_samples < 0) {
-        effective_train_samples = 0;
-        // Se corrige cualquier valor negativo de muestras de entrenamiento a cero.
-    }
+    int effective_epochs = (n_epochs < 0) ? 0 : n_epochs;
+    // Se sanea la cantidad de epocas solicitadas.
 
-    if (effective_train_samples > effective_samples) {
-        effective_train_samples = effective_samples;
-        // Se fuerza que el conjunto de entrenamiento no supere la cantidad total de muestras a evaluar.
-    }
-
-    if (n_epochs < 0) {
-        n_epochs = 0;
-        // Se corrige una cantidad negativa de épocas a cero para evitar lazos inválidos.
+    if (effective_epochs > TRAIN_MAX_EPOCHS) {
+        effective_epochs = TRAIN_MAX_EPOCHS;
+        // Se limita la cantidad de epocas al tamano del historial hardware.
     }
 
     lfsr_t model_seed_state = (seed == 0) ? (lfsr_t)0x1D2B : (lfsr_t)seed;
-    // Se inicializa el estado pseudoaleatorio base usado para inicialización del modelo y etiquetas negativas.
+    // Se crea la semilla base usada para inicializacion del modelo.
 
     if ((reset_model == true) || (model_initialized == false)) {
-        initialize_model(model_weights, model_biases, model_seed_state);
-        // Si se solicita reset o el modelo nunca se inicializó, se regeneran pesos y bias latentes desde cero.
+        initialize_dense_layer<MODEL_LAYER1_INPUT_BITS, MODEL_LAYER1_NEURONS>(
+            model_weights_l1,
+            model_biases_l1,
+            model_seed_state
+        );
+        // Se inicializa la primera capa cuando se solicita reset o aun no existe estado valido.
+
+        initialize_dense_layer<MODEL_LAYER2_INPUT_BITS, MODEL_LAYER2_NEURONS>(
+            model_weights_l2,
+            model_biases_l2,
+            model_seed_state
+        );
+        // Se inicializa la segunda capa usando la misma semilla reproducible.
 
         model_initialized = true;
-        // Se marca el estado del modelo como correctamente inicializado para llamadas futuras.
+        // Se marca el modelo persistente como correctamente inicializado.
     }
 
-    lfsr_t train_state = (seed == 0) ? (lfsr_t)0xACE1 : (lfsr_t)seed;
-    // Se inicializa el LFSR específico del entrenamiento para crear etiquetas negativas reproducibles.
+    if (effective_train_samples > 0) {
+        // Solo se limpian metricas cuando realmente se va a ejecutar una fase de entrenamiento.
 
-    activation_t h_pos[MODEL_NEURONS];
-    // Se reserva el buffer local de activaciones positivas de la única capa entrenable.
+clear_epoch_history_loop:
+        for (int epoch = 0; epoch < TRAIN_MAX_EPOCHS; epoch++) {
+#pragma HLS PIPELINE II=1
+            // Se limpian los buffers de historial de forma lineal y sintetizable.
 
-    activation_t h_neg[MODEL_NEURONS];
-    // Se reserva el buffer local de activaciones negativas de la única capa entrenable.
+            epoch_loss_pos_mem[epoch] = (loss_t)0;
+            // Se limpia el historial de perdida positiva.
 
-#pragma HLS ARRAY_PARTITION variable=h_pos cyclic factor=MODEL_PARALLEL_NEURONS dim=1
-    // Se particiona cíclicamente el buffer de activaciones positivas para acompañar el paralelismo de 8 neuronas.
+            epoch_loss_neg_mem[epoch] = (loss_t)0;
+            // Se limpia el historial de perdida negativa.
 
-#pragma HLS ARRAY_PARTITION variable=h_neg cyclic factor=MODEL_PARALLEL_NEURONS dim=1
-    // Se particiona cíclicamente el buffer de activaciones negativas por la misma razón arquitectónica.
+            epoch_g_pos_mem[epoch] = (goodness_t)0;
+            // Se limpia el historial de goodness positiva.
+
+            epoch_g_neg_mem[epoch] = (goodness_t)0;
+            // Se limpia el historial de goodness negativa.
+
+            epoch_gap_mem[epoch] = (goodness_t)0;
+            // Se limpia el historial de goodness gap.
+        }
+
+clear_sample_metrics_loop:
+        for (int sample_idx = 0; sample_idx < effective_train_samples; sample_idx++) {
+#pragma HLS PIPELINE II=1
+            // Se limpian las trazas por muestra de la fase de entrenamiento.
+
+            g_pos_mem[sample_idx] = (goodness_t)0;
+            // Se limpia la goodness positiva por muestra.
+
+            g_neg_mem[sample_idx] = (goodness_t)0;
+            // Se limpia la goodness negativa por muestra.
+
+            gap_mem[sample_idx] = (goodness_t)0;
+            // Se limpia el goodness gap por muestra.
+        }
+
+        lfsr_t train_state = (seed == 0) ? (lfsr_t)0xACE1 : (lfsr_t)seed;
+        // Se inicializa el estado pseudoaleatorio usado para etiquetas negativas del entrenamiento.
 
 training_epoch_loop:
-    for (int epoch = 0; epoch < n_epochs; epoch++) {
-        // Se recorren las épocas locales de entrenamiento FF definidas por el control superior.
+        for (int epoch = 0; epoch < effective_epochs; epoch++) {
+            // Se recorre la cantidad efectiva de epocas solicitadas.
 
-training_sample_loop:
-        for (int sample_idx = 0; sample_idx < effective_train_samples; sample_idx++) {
-            // Se recorren las muestras de entrenamiento seleccionadas para esta llamada al kernel.
+            stat_accum_t epoch_loss_pos_sum = 0;
+            // Se inicializa el acumulador de perdida positiva de la epoca.
 
-            raw_sample_t input_sample = load_sample_from_words(in_mem, sample_idx);
-            // Se lee la muestra física actual desde memoria externa.
+            stat_accum_t epoch_loss_neg_sum = 0;
+            // Se inicializa el acumulador de perdida negativa de la epoca.
 
-            label_oh_t true_onehot;
-            // Se reserva un contenedor local para la etiqueta verdadera de la muestra.
+            stat_accum_t epoch_g_pos_sum = 0;
+            // Se inicializa el acumulador de goodness positiva de la epoca.
 
-            pixels_t pixels;
-            // Se reserva un contenedor local para la imagen binaria de la muestra.
+            stat_accum_t epoch_g_neg_sum = 0;
+            // Se inicializa el acumulador de goodness negativa de la epoca.
 
-            padding_t padding;
-            // Se reserva un contenedor local para el padding físico aunque no participe en el forward de la capa.
+batch_loop:
+            for (int batch_start = 0; batch_start < effective_train_samples; batch_start += MODEL_BATCH_SIZE) {
+                // Se recorre el dataset de entrenamiento en bloques pequenos y sintetizables.
 
-            unpack_sample(input_sample, true_onehot, pixels, padding);
-            // Se desempaqueta completamente la muestra para recuperar su semántica original.
+                int remaining = effective_train_samples - batch_start;
+                // Se calcula cuantas muestras quedan por procesar en esta epoca.
 
-            label_idx_t true_label_idx = decode_onehot(true_onehot);
-            // Se decodifica el label verdadero a índice entero para formar el par FF supervisado.
+                int batch_size = (remaining > MODEL_BATCH_SIZE) ? MODEL_BATCH_SIZE : remaining;
+                // Se ajusta el tamano real del batch para el ultimo bloque parcial.
 
-            label_idx_t neg_label_idx = generate_negative_label(true_label_idx, train_state);
-            // Se genera una etiqueta negativa distinta a la verdadera con el LFSR local del entrenamiento.
+                bool capture_sample_metrics = (epoch == (effective_epochs - 1));
+                // Se decide si esta epoca debe dejar trazas por muestra para el testbench.
 
-            label_oh_t neg_onehot = encode_onehot(neg_label_idx);
-            // Se reconstruye el label negativo en formato one-hot para la entrada incorrecta.
-
-            ff_input_t x_pos = build_ff_input(true_onehot, pixels);
-            // Se construye la entrada positiva usando la imagen real y su etiqueta correcta.
-
-            ff_input_t x_neg = build_ff_input(neg_onehot, pixels);
-            // Se construye la entrada negativa usando la misma imagen y una etiqueta incorrecta.
-
-            goodness_t g_pos = 0;
-            // Se reserva la goodness positiva local de la muestra actual.
-
-            goodness_t g_neg = 0;
-            // Se reserva la goodness negativa local de la muestra actual.
-
-            ff_layer_forward(x_pos, model_weights, model_biases, h_pos, g_pos);
-            // Se ejecuta el forward local para la muestra positiva con pesos binarizados por signo latente.
-
-            ff_layer_forward(x_neg, model_weights, model_biases, h_neg, g_neg);
-            // Se ejecuta el forward local para la muestra negativa con la misma imagen y etiqueta incorrecta.
-
-            signal_t e_pos = 0;
-            // Se reserva la señal de aprendizaje asociada al ejemplo positivo.
-
-            signal_t e_neg = 0;
-            // Se reserva la señal de aprendizaje asociada al ejemplo negativo.
-
-            ff_compute_training_signal(g_pos, g_neg, e_pos, e_neg);
-            // Se calcula la señal local FF por tramos usando threshold, g_pos y g_neg.
-
-            ff_update_model(x_pos, x_neg, h_pos, h_neg, e_pos, e_neg, model_weights, model_biases);
-            // Se actualizan pesos y bias latentes mediante una regla local coherente con Forward-Forward.
-
-            if (epoch == (n_epochs - 1)) {
-                g_pos_mem[sample_idx] = g_pos;
-                // En la última época se registra la goodness positiva observada para esta muestra.
-
-                g_neg_mem[sample_idx] = g_neg;
-                // En la última época se registra la goodness negativa observada para esta muestra.
-
-                gap_mem[sample_idx] = g_pos - g_neg;
-                // En la última época se registra el goodness gap, útil para inspección y experimentación.
+                train_batch_local(
+                    in_mem,
+                    batch_start,
+                    batch_size,
+                    model_weights_l1,
+                    model_biases_l1,
+                    model_weights_l2,
+                    model_biases_l2,
+                    train_state,
+                    capture_sample_metrics,
+                    g_pos_mem,
+                    g_neg_mem,
+                    gap_mem,
+                    epoch_loss_pos_sum,
+                    epoch_loss_neg_sum,
+                    epoch_g_pos_sum,
+                    epoch_g_neg_sum
+                );
+                // Se procesa el batch completo con la regla de entrenamiento alineada al notebook.
             }
+
+            epoch_loss_pos_mem[epoch] = compute_mean_loss(epoch_loss_pos_sum, effective_train_samples * MODEL_NUM_LAYERS);
+            // Se escribe la perdida positiva media por capa de la epoca actual.
+
+            epoch_loss_neg_mem[epoch] = compute_mean_loss(epoch_loss_neg_sum, effective_train_samples * MODEL_NUM_LAYERS);
+            // Se escribe la perdida negativa media por capa de la epoca actual.
+
+            epoch_g_pos_mem[epoch] = compute_mean_goodness(epoch_g_pos_sum, effective_train_samples);
+            // Se escribe la goodness positiva media total g1 + g2 de la epoca actual.
+
+            epoch_g_neg_mem[epoch] = compute_mean_goodness(epoch_g_neg_sum, effective_train_samples);
+            // Se escribe la goodness negativa media total g1 + g2 de la epoca actual.
+
+            epoch_gap_mem[epoch] = epoch_g_pos_mem[epoch] - epoch_g_neg_mem[epoch];
+            // Se escribe el goodness gap medio de la epoca actual.
         }
     }
 
     ap_uint<32> correct_count = 0;
-    // Se inicializa el contador de aciertos que medirá la capacidad de clasificación del modelo entrenado.
+    // Se inicializa el contador de aciertos de la fase de inferencia.
 
 inference_loop:
-    for (int sample_idx = 0; sample_idx < effective_samples; sample_idx++) {
-        // Se recorre cada muestra a inferir usando el modelo ya entrenado dentro del FPGA.
+    for (int sample_idx = 0; sample_idx < effective_eval_samples; sample_idx++) {
+        // Se recorre el subset actual de inferencia con el modelo ya entrenado.
 
         raw_sample_t input_sample = load_sample_from_words(in_mem, sample_idx);
-        // Se vuelve a leer la muestra original desde memoria externa para inferencia multiclase.
+        // Se carga la muestra actual desde memoria externa.
 
         label_oh_t true_onehot;
-        // Se reserva un contenedor local para el label real de la muestra evaluada.
+        // Se reserva el label verdadero de la muestra.
 
         pixels_t pixels;
-        // Se reserva un contenedor local para la imagen binaria de la muestra evaluada.
+        // Se reserva la imagen binaria de la muestra.
 
         padding_t padding;
-        // Se reserva un contenedor local para el padding físico aunque aquí no se use directamente.
+        // Se reserva el padding fisico aunque aqui no se use.
 
         unpack_sample(input_sample, true_onehot, pixels, padding);
-        // Se extraen el label real, la imagen y el padding desde el dataset congelado.
+        // Se desempaqueta la muestra para recuperar su semantica original.
 
         label_idx_t true_label_idx = decode_onehot(true_onehot);
-        // Se decodifica la etiqueta verdadera para comparar luego con la predicción.
+        // Se decodifica la clase verdadera de la muestra.
 
-        label_idx_t pred_label_idx = ff_predict_label(pixels, model_weights, model_biases);
-        // Se realiza inferencia multiclase probando las 10 etiquetas y tomando la de mayor goodness.
+        label_idx_t pred_label_idx = ff_predict_label(
+            pixels,
+            model_weights_l1,
+            model_biases_l1,
+            model_weights_l2,
+            model_biases_l2
+        );
+        // Se ejecuta la inferencia multiclase probando las 10 etiquetas con g_total = g1 + g2.
 
         true_label_mem[sample_idx] = true_label_idx;
-        // Se almacena la etiqueta verdadera para evaluación posterior en el testbench.
+        // Se guarda la clase verdadera para el testbench.
 
         pred_label_mem[sample_idx] = pred_label_idx;
-        // Se almacena la etiqueta predicha por el acelerador entrenado.
+        // Se guarda la clase predicha para el testbench.
 
         if (pred_label_idx == true_label_idx) {
             correct_count++;
-            // Se incrementa el contador de aciertos cuando la predicción coincide con la clase real.
+            // Se incrementa el contador cuando la prediccion coincide con la etiqueta real.
         }
     }
 
     correct_count_mem[0] = correct_count;
-    // Se escribe el total de aciertos en la primera posición del buffer de salida de métricas.
+    // Se expone el total de aciertos de la fase de inferencia actual.
 
-    snapshot_model(model_weights, model_biases, weight_mem_out, bias_mem_out);
-    // Se vuelca el estado entrenado del modelo a memoria externa para inspección desde el testbench.
+    snapshot_model(
+        model_weights_l1,
+        model_biases_l1,
+        model_weights_l2,
+        model_biases_l2,
+        weight_mem_out,
+        bias_mem_out
+    );
+    // Se vuelca el estado final del modelo multicapa a memoria externa para inspeccion.
 }

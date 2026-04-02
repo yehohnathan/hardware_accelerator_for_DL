@@ -1,67 +1,97 @@
 #ifndef DEBUG_UTILS_HPP
 #define DEBUG_UTILS_HPP
 
-#include <vector>         // Se incluye std::vector para los buffers del testbench y las utilidades de inspección.
-#include <string>         // Se incluye std::string para títulos y mensajes de depuración.
-#include "forward_fw.hpp" // Se reutilizan tipos, constantes y prototipos del kernel principal.
+#include <string>         // Se incluye std::string para titulos y mensajes de depuracion.
+#include <vector>         // Se incluye std::vector para buffers del testbench.
+
+#include "forward_fw.hpp" // Se reutilizan tipos, constantes y formatos del kernel principal.
 
 // ============================================================
-// Utilidades de depuración para C simulation y testbench
+// Utilidades de depuracion para C simulation y testbench
 // ============================================================
-// Se declara la lectura completa del binario como words de 32 bits.
-bool read_binary_file_words(const std::string &file_path,
-							std::vector<word_t> &buffer);
+bool read_binary_file_words(const std::string &file_path, std::vector<word_t> &buffer);  // Se declara la lectura completa del binario.
 
-// Se declara la extracción de una muestra concreta desde un buffer lineal.
-void extract_sample_words(const std::vector<word_t> &buffer,
-						  int sample_idx, word_t sample_words[WORDS_PER_SAMPLE]);
+void extract_sample_words(const std::vector<word_t> &buffer, int sample_idx, word_t sample_words[WORDS_PER_SAMPLE]);  // Se declara la extraccion de una muestra concreta.
 
-// Se declara la impresión hexadecimal de una muestra cruda.
-void print_sample_words(const word_t sample_words[WORDS_PER_SAMPLE],
-						const std::string &title);
+void print_sample_words(const word_t sample_words[WORDS_PER_SAMPLE], const std::string &title);  // Se declara la impresion hexadecimal de una muestra.
 
-// Se declara la impresión amigable de un label one-hot.
-void print_label_onehot(label_oh_t label_onehot);
+void print_label_onehot(label_oh_t label_onehot);  // Se declara la impresion amigable del label one-hot.
 
-// Se declara la impresión amigable del padding físico.
-void print_padding_bits(padding_t padding);
+void print_padding_bits(padding_t padding);  // Se declara la impresion amigable del padding.
 
-// Se declara la impresión resumida de la imagen binaria.
-void print_pixels_summary(pixels_t pixels, int preview_count = 64);
+void print_pixels_summary(pixels_t pixels, int preview_count = 64);  // Se declara la impresion resumida de la imagen binaria.
 
-// Se declara la impresión completa de una muestra desempaquetada.
-void print_unpacked_sample(raw_sample_t sample, const std::string &title);
+void print_unpacked_sample(raw_sample_t sample, const std::string &title);  // Se declara la impresion completa de una muestra desempaquetada.
 
-// Se declara la comparación de pixels entre dos muestras.
-bool same_pixels(raw_sample_t a, raw_sample_t b);
+bool same_pixels(raw_sample_t a, raw_sample_t b);  // Se declara la comparacion de pixeles entre dos muestras.
 
-// Se declara la comparación de padding entre dos muestras.
-bool same_padding(raw_sample_t a, raw_sample_t b);
+bool same_padding(raw_sample_t a, raw_sample_t b);  // Se declara la comparacion de padding entre dos muestras.
 
-// Se declara la comparación bit a bit de dos muestras completas.
-bool same_raw_sample(raw_sample_t a, raw_sample_t b);
+bool same_raw_sample(raw_sample_t a, raw_sample_t b);  // Se declara la comparacion bit a bit de dos muestras.
 
-// Se declara la impresión de un separador visual en consola.
-void print_separator(const std::string &title);
+void print_separator(const std::string &title);  // Se declara la impresion de un separador visual.
 
-// Se declara la inspección de un rango de muestras desempaquetadas.
-void print_samples_range(const std::vector<word_t> &buffer,
-						 int start_sample, int num_samples);
+void print_samples_range(const std::vector<word_t> &buffer, int start_sample, int num_samples);  // Se declara la inspeccion de un rango de muestras.
 
-// Se declara la impresión de métricas de entrenamiento FF.
-void print_training_preview(const std::vector<goodness_t> &g_pos,
-							const std::vector<goodness_t> &g_neg,
-							const std::vector<goodness_t> &gap,
-							int preview_count);
+void print_training_preview(
+    const std::vector<goodness_t> &g_pos,
+    const std::vector<goodness_t> &g_neg,
+    const std::vector<goodness_t> &gap,
+    int preview_count
+);  // Se declara la impresion de goodness y gap por muestra.
 
-// Se declara la impresión de una vista rápida de predicciones y clases reales.
-void print_prediction_preview(const std::vector<label_idx_t> &true_labels,
-							  const std::vector<label_idx_t> &pred_labels,
-							  int preview_count);
+void print_epoch_history(
+    const std::vector<loss_t> &epoch_loss_pos,
+    const std::vector<loss_t> &epoch_loss_neg,
+    const std::vector<goodness_t> &epoch_g_pos,
+    const std::vector<goodness_t> &epoch_g_neg,
+    const std::vector<goodness_t> &epoch_gap,
+    int epochs_to_print
+);  // Se declara la impresion del historial por epoca.
 
-// Se declara la impresión resumida del estado entrenado del modelo.
-void print_model_overview(const std::vector<latent_t> &weights, 
-						  const std::vector<bias_t> &biases,
-						  int preview_weights);
+void print_epoch_terminal_update(
+    int epoch_idx,
+    int total_epochs,
+    loss_t epoch_loss_pos,
+    loss_t epoch_loss_neg,
+    goodness_t epoch_g_pos,
+    goodness_t epoch_g_neg,
+    goodness_t epoch_gap,
+    double val_accuracy,
+    double elapsed_sec,
+    bool has_validation
+);  // Se declara la impresion incremental por epoca con formato inspirado en el notebook.
+
+void print_prediction_preview(
+    const std::vector<label_idx_t> &true_labels,
+    const std::vector<label_idx_t> &pred_labels,
+    int preview_count,
+    int start_sample = 0
+);  // Se declara la impresion de verdad vs prediccion.
+
+void print_model_overview(
+    const std::vector<latent_t> &weights,
+    const std::vector<bias_t> &biases,
+    int preview_weights
+);  // Se declara la impresion resumida del estado entrenado del modelo.
+
+void print_epoch_model_delta(
+    int epoch_idx,
+    const std::vector<latent_t> &previous_weights,
+    const std::vector<latent_t> &current_weights,
+    const std::vector<bias_t> &previous_biases,
+    const std::vector<bias_t> &current_biases
+);  // Se declara la impresion del cambio real del modelo entre dos snapshots consecutivos.
+
+void print_epoch_freeze_justification(
+    const std::vector<loss_t> &epoch_loss_pos,
+    const std::vector<loss_t> &epoch_loss_neg,
+    const std::vector<goodness_t> &epoch_g_pos,
+    const std::vector<goodness_t> &epoch_g_neg,
+    const std::vector<goodness_t> &epoch_gap,
+    const std::vector<latent_t> &weights,
+    const std::vector<bias_t> &biases,
+    int epochs_to_check
+);  // Se declara la impresion de una justificacion cuando las metricas quedan congeladas entre epocas.
 
 #endif

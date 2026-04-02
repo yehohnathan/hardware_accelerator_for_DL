@@ -10,6 +10,14 @@ INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.cpp' from D:/TFG/hardwar
 INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.cpp' to the project
 INFO: [HLS 200-1465] Applying ini 'syn.file=debug_utils.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(12)
 INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/debug_utils.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_b.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(13)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_b.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_b.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(14)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_b.hpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_c.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(15)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_c.cpp' to the project
+INFO: [HLS 200-1465] Applying ini 'syn.file=tb_stage_c.hpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(16)
+INFO: [HLS 200-10] Adding design file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/tb_stage_c.hpp' to the project
 INFO: [HLS 200-1465] Applying ini 'tb.file=train_tb.cpp' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(7)
 INFO: [HLS 200-10] Adding test bench file 'D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/train_tb.cpp' to the project
 INFO: [HLS 200-1465] Applying ini 'syn.top=train_tb' from D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/hls_component/hls_config.cfg(8)
@@ -22,12 +30,83 @@ INFO: [HLS 200-1465] Applying ini 'package.output.format=ip_catalog' from D:/TFG
 INFO: [SIM 211-2] *************** CSIM start ***************
 INFO: [SIM 211-4] CSIM will launch CLANG as the compiler.
 INFO: [HLS 200-2036] Building debug C Simulation binaries
+   Compiling ../../../../train_tb.cpp in debug mode
+   Compiling ../../../../tb_stage_c.cpp in debug mode
+   Compiling ../../../../tb_stage_b.cpp in debug mode
    Compiling ../../../../debug_utils.cpp in debug mode
+   Compiling ../../../../forward_fw.cpp in debug mode
    Generating csim.exe
+In file included from ../../../../train_tb.cpp:1:
+In file included from ../../../../tb_stage_b.hpp:6:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_fixed.h:9:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../tb_stage_c.cpp:1:
+In file included from ../../../../tb_stage_c.hpp:7:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_fixed.h:9:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../tb_stage_b.cpp:1:
+In file included from ../../../../tb_stage_b.hpp:6:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_fixed.h:9:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
 In file included from ../../../../debug_utils.cpp:1:
-In file included from ../../../../debug_utils.hpp:14:
-In file included from ../../../../forward_fw.hpp:5:
-In file included from C:/Xilinx/Vitis/2024.2/include/ap_int.h:10:
+In file included from ../../../../debug_utils.hpp:7:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_fixed.h:9:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
+In file included from C:/Xilinx/Vitis/2024.2/include/etc/hls_half_fpo.h:19:
+In file included from C:/Xilinx/Vitis/2024.2/include/hls_fpo.h:140:
+In file included from C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:150:
+C:/Xilinx/Vitis/2024.2/include/gmp.h:58:9: warning: '__GMP_LIBGMP_DLL' macro redefined [-Wmacro-redefined]
+#define __GMP_LIBGMP_DLL  0
+        ^
+C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: previous definition is here
+#define __GMP_LIBGMP_DLL 1
+        ^
+1 warning generated.
+In file included from ../../../../forward_fw.cpp:1:
+In file included from ../../../../forward_fw.hpp:4:
+In file included from C:/Xilinx/Vitis/2024.2/include/ap_fixed.h:9:
 In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_common.h:658:
 In file included from C:/Xilinx/Vitis/2024.2/include/etc/ap_private.h:68:
 In file included from C:/Xilinx/Vitis/2024.2/include/hls_half.h:26:
@@ -42,65 +121,486 @@ C:/Xilinx/Vitis/2024.2/include/floating_point_v7_1_bitacc_cmodel.h:142:9: note: 
         ^
 1 warning generated.
 
-==== Primera muestra original desde archivo ====
-word[ 0] = 0x00000001
+============================================================
+INFORMACION GENERAL DEL BINARIO
+============================================================
+file_path      = D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/mnist/data/processed/mnist_ff_input_packed.bin
+total_words    = 1050000
+words/sample   = 25
+total_samples  = 42000
+
+============================================================
+PRIMERA MUESTRA ORIGINAL EN HEX
+============================================================
+Contenido de la primera muestra:
+word[ 0] = 0x00000002
 word[ 1] = 0x00000000
 word[ 2] = 0x00000000
 word[ 3] = 0x00000000
-word[ 4] = 0x00003000
-word[ 5] = 0x00000380
-word[ 6] = 0xc0000038
-word[ 7] = 0x0e000001
-word[ 8] = 0x00700000
-word[ 9] = 0x00078000
-word[10] = 0x00003c00
-word[11] = 0x000001e0
-word[12] = 0xf000000e
-word[13] = 0x07800000
-word[14] = 0x00380000
-word[15] = 0x0001c000
-word[16] = 0x00001c00
-word[17] = 0x000000e0
-word[18] = 0x70000007
-word[19] = 0x0f000000
-word[20] = 0x00300000
+word[ 4] = 0x0000c000
+word[ 5] = 0x00000e00
+word[ 6] = 0x000000e0
+word[ 7] = 0x38000007
+word[ 8] = 0x01c00000
+word[ 9] = 0x001e0000
+word[10] = 0x0000f000
+word[11] = 0x00000780
+word[12] = 0xc0000038
+word[13] = 0x1e000003
+word[14] = 0x00e00000
+word[15] = 0x00070000
+word[16] = 0x00007000
+word[17] = 0x00000380
+word[18] = 0xc000001c
+word[19] = 0x3c000001
+word[20] = 0x00c00000
 word[21] = 0x00000000
 word[22] = 0x00000000
 word[23] = 0x00000000
 word[24] = 0x00000000
 
-========================================
-Representacion completa de la muestra (800 bits)
-Formato: [label(10) | pixels(784) | padding(6)]
-Total bits: 800
-========================================
-0000 0000 0000 0000 0000 0000 0000 0000  | 1
-0000 0000 0000 0000 0000 0000 0000 0000  | 2
-0000 0000 0000 0000 0000 0000 0000 0000  | 3
-0000 0000 0000 0000 0000 0000 0000 0000  | 4
-0000 0000 0011 0000 0000 0000 0000 0000  | 5
-0000 1111 0000 0000 0000 0000 0000 0000  | 6
-0111 0000 0000 0000 0000 0000 0000 0111  | 7
-0000 0000 0000 0000 0000 0000 1110 0000  | 8
-0000 0000 0000 0000 0001 1100 0000 0000  | 9
-0000 0000 0000 0001 1100 0000 0000 0000  | 10
-0000 0000 0011 1000 0000 0000 0000 0000  | 11
-0000 0111 1000 0000 0000 0000 0000 0000  | 12
-1111 0000 0000 0000 0000 0000 0000 1110  | 13
-0000 0000 0000 0000 0000 0001 1110 0000  | 14
-0000 0000 0000 0000 0011 1100 0000 0000  | 15
-0000 0000 0000 0111 1000 0000 0000 0000  | 16
-0000 0000 0111 0000 0000 0000 0000 0000  | 17
-0000 1110 0000 0000 0000 0000 0000 0001  | 18
-1100 0000 0000 0000 0000 0000 0011 1000  | 19
-0000 0000 0000 0000 0000 0011 1000 0000  | 20
-0000 0000 0000 0000 0011 0000 0000 0000  | 21
-0000 0000 0000 0000 0000 0000 0000 0000  | 22
-0000 0000 0000 0000 0000 0000 0000 0000  | 23
-0000 0000 0000 0000 0000 0000 0000 0000  | 24
-0000 0000 0000 0000 0000 0000 0000 0001  | 25
+============================================================
+DESEMPAQUETADO DE LA PRIMERA MUESTRA ORIGINAL
+============================================================
+label_onehot = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+decoded_label = 1
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 64
+pixels preview [0..783] = 
 
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000011000000
+0000000000000000000111000000
+0000000000000000000111000000
+0000000000000000001110000000
+0000000000000000011100000000
+0000000000000000111000000000
+0000000000000001111000000000
+0000000000000011110000000000
+0000000000000111100000000000
+0000000000000111000000000000
+0000000000001111000000000000
+0000000000011110000000000000
+0000000000011100000000000000
+0000000000111000000000000000
+0000000000111000000000000000
+0000000001110000000000000000
+0000000011100000000000000000
+0000000011100000000000000000
+0000000011110000000000000000
+0000000011000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+
+============================================================
+DESEMPAQUETADO DE LA PRIMERA MUESTRA POSITIVA
+============================================================
+label_onehot = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+decoded_label = 1
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 64
+pixels preview [0..783] = 
+
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000011000000
+0000000000000000000111000000
+0000000000000000000111000000
+0000000000000000001110000000
+0000000000000000011100000000
+0000000000000000111000000000
+0000000000000001111000000000
+0000000000000011110000000000
+0000000000000111100000000000
+0000000000000111000000000000
+0000000000001111000000000000
+0000000000011110000000000000
+0000000000011100000000000000
+0000000000111000000000000000
+0000000000111000000000000000
+0000000001110000000000000000
+0000000011100000000000000000
+0000000011100000000000000000
+0000000011110000000000000000
+0000000011000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+
+============================================================
+DESEMPAQUETADO DE LA PRIMERA MUESTRA NEGATIVA
+============================================================
+label_onehot = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+decoded_label = 3
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 64
+pixels preview [0..783] = 
+
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000011000000
+0000000000000000000111000000
+0000000000000000000111000000
+0000000000000000001110000000
+0000000000000000011100000000
+0000000000000000111000000000
+0000000000000001111000000000
+0000000000000011110000000000
+0000000000000111100000000000
+0000000000000111000000000000
+0000000000001111000000000000
+0000000000011110000000000000
+0000000000011100000000000000
+0000000000111000000000000000
+0000000000111000000000000000
+0000000001110000000000000000
+0000000011100000000000000000
+0000000011100000000000000000
+0000000011110000000000000000
+0000000011000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+
+============================================================
+VERIFICACIONES DE CONSISTENCIA DE ETAPA B
+============================================================
+positive_equals_input = true
+negative_same_pixels  = true
+negative_same_padding = true
+true_label(first)     = 1
+neg_label(first)      = 3
+neg_differs_from_true = true
+total_collisions      = 0
+stage_b_validation_ok = true
+
+============================================================
+RESUMEN GLOBAL DE MODULOS
+============================================================
+stage_b_ok     = true
+
+============================================================
+CONFIGURACION DE ETAPA C
+============================================================
+train_start       = 0
+train_samples     = 512
+eval_start        = 41488
+eval_samples      = 512
+eval_reuses_train = false
+epochs            = 5
+batch_size        = 32
+label_scale       = 3
+threshold         = 3
+learning_rate     = 0.00488281
+
+============================================================
+RESULTADOS DE ENTRENAMIENTO DE ETAPA C
+============================================================
+holdout_correct_count = 46
+holdout_accuracy     = 0.0898438
+
+============================================================
+HISTORIAL POR EPOCA
+============================================================
+epoch[1] loss_pos=0.000244141 loss_neg=8.00024 g_pos=57.1334 g_neg=57.7184 gap=-0.585022
+epoch[2] loss_pos=0.000244141 loss_neg=8.00024 g_pos=57.1334 g_neg=58.1445 gap=-1.01117
+epoch[3] loss_pos=0.000244141 loss_neg=8.00024 g_pos=57.1334 g_neg=57.785 gap=-0.651672
+epoch[4] loss_pos=0.000244141 loss_neg=8.00024 g_pos=57.1334 g_neg=57.8997 gap=-0.766357
+epoch[5] loss_pos=0.000244141 loss_neg=8.00024 g_pos=57.1334 g_neg=57.6127 gap=-0.479309
+
+============================================================
+VISTA PREVIA DE METRICAS DE ENTRENAMIENTO FF
+============================================================
+sample[0] g_pos=39.2344 g_neg=31.0469 gap=8.1875
+sample[1] g_pos=81.625 g_neg=97.6875 gap=-16.0625
+sample[2] g_pos=22.9062 g_neg=31.4844 gap=-8.57812
+sample[3] g_pos=34.5781 g_neg=38.4062 gap=-3.82812
+sample[4] g_pos=101.734 g_neg=113.125 gap=-11.3906
+sample[5] g_pos=49.5312 g_neg=45.8906 gap=3.64062
+sample[6] g_pos=33.8906 g_neg=41.2031 gap=-7.3125
+sample[7] g_pos=64.2344 g_neg=64.5625 gap=-0.328125
+sample[8] g_pos=64.4062 g_neg=67.7031 gap=-3.29688
+sample[9] g_pos=53.9375 g_neg=56.4062 gap=-2.46875
+sample[10] g_pos=83.9375 g_neg=79.7812 gap=4.15625
+sample[11] g_pos=61.875 g_neg=56.4375 gap=5.4375
+
+============================================================
+VISTA PREVIA DE PREDICCIONES
+============================================================
+sample[41488] true=5 pred=4 hit=false
+sample[41489] true=1 pred=9 hit=false
+sample[41490] true=8 pred=5 hit=false
+sample[41491] true=9 pred=9 hit=true
+sample[41492] true=3 pred=8 hit=false
+sample[41493] true=6 pred=2 hit=false
+sample[41494] true=4 pred=8 hit=false
+sample[41495] true=2 pred=9 hit=false
+sample[41496] true=4 pred=6 hit=false
+sample[41497] true=5 pred=8 hit=false
+sample[41498] true=8 pred=5 hit=false
+sample[41499] true=7 pred=8 hit=false
+sample[41500] true=7 pred=8 hit=false
+sample[41501] true=1 pred=5 hit=false
+sample[41502] true=9 pred=8 hit=false
+sample[41503] true=3 pred=8 hit=false
+sample[41504] true=9 pred=8 hit=false
+sample[41505] true=4 pred=6 hit=false
+sample[41506] true=8 pred=8 hit=true
+sample[41507] true=8 pred=8 hit=true
+
+============================================================
+RESUMEN DEL MODELO ENTRENADO
+============================================================
+total_weights   = 50816
+min_weight      = -0.25
+max_weight      = 0.25
+positive_w      = 25387
+negative_w      = 25429
+zero_w          = 0
+clip_pos_w      = 0
+clip_neg_w      = 0
+bias_count      = 64
+min_bias        = 0
+max_bias        = 0
+first_weights   = -0.125 0.25 -0.125 0.125 0.25 -0.25 -0.25 -0.125 0.25 -0.25 -0.125 0.25 -0.25 -0.25 -0.25 -0.125 0.125 0.125 0.25 -0.125 0.125 0.25 -0.25 -0.25 
+first_biases    = 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+
+============================================================
+NUEVOS SAMPLES PARA TEST
+============================================================
+
+============================================================
+INSPECCION DE RANGO DE MUESTRAS
+============================================================
+start_sample = 10000
+num_samples  = 3
+range        = [10000 : 10003)
+
+============================================================
+MUESTRA 10000
+============================================================
+words crudas:
+word[ 0] = 0x00000004
+word[ 1] = 0x00000000
+word[ 2] = 0x00000000
+word[ 3] = 0x00000000
+word[ 4] = 0x00000e00
+word[ 5] = 0x800001f0
+word[ 6] = 0x1c000019
+word[ 7] = 0x30c00003
+word[ 8] = 0x03040000
+word[ 9] = 0x00300000
+word[10] = 0x00030000
+word[11] = 0x80003060
+word[12] = 0x1c00011f
+word[13] = 0xe0c0001f
+word[14] = 0x0c040001
+word[15] = 0x00c04000
+word[16] = 0x000e0c00
+word[17] = 0x0000f0c0
+word[18] = 0x00000df8
+word[19] = 0x000000cf
+word[20] = 0x40000004
+word[21] = 0x00000000
+word[22] = 0x00000000
+word[23] = 0x00000000
+word[24] = 0x00000000
+
+============================================================
+desempaquetado:
+============================================================
+label_onehot = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+decoded_label = 2
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 86
+pixels preview [0..783] = 
+
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000001110000000000
+0000000000000011111000000000
+0000000000000110011000000000
+0000000000001110001100000000
+0000000000001100001100000000
+0000000000001000001100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000011000001100000000
+0000000001111110001000000000
+0000000011100011111000000000
+0000000011000001111000000000
+0000000010000000110000000000
+0000000010000000110000000000
+0000000011000001110000000000
+0000000011000011110000000000
+0000000001111110110000000000
+0000000000111100110000000000
+0000000000000000100000000000
+0000000000000000100000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+
+============================================================
+MUESTRA 10001
+============================================================
+words crudas:
+word[ 0] = 0x00000020
+word[ 1] = 0x00000000
+word[ 2] = 0x00000000
+word[ 3] = 0x00000000
+word[ 4] = 0x00000000
+word[ 5] = 0x00000000
+word[ 6] = 0xf0000000
+word[ 7] = 0x3f800000
+word[ 8] = 0x3ffc0000
+word[ 9] = 0x03ffe000
+word[10] = 0x00019f00
+word[11] = 0x00000170
+word[12] = 0x70000007
+word[13] = 0x0e000000
+word[14] = 0x01800000
+word[15] = 0x00300000
+word[16] = 0x00030000
+word[17] = 0x00003000
+word[18] = 0x00000380
+word[19] = 0x80000018
+word[20] = 0x0c000001
+word[21] = 0x007c0000
+word[22] = 0x0007c000
+word[23] = 0x00001800
+word[24] = 0x00000000
+
+============================================================
+desempaquetado:
+============================================================
+label_onehot = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+decoded_label = 5
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 85
+pixels preview [0..783] = 
+
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000011110000000000
+0000000000000111111100000000
+0000000000001111111111110000
+0000000000011111111111110000
+0000000000111110011000000000
+0000000000111010000000000000
+0000000000111000000000000000
+0000000000111000000000000000
+0000000000011100000000000000
+0000000000000110000000000000
+0000000000000011000000000000
+0000000000000011000000000000
+0000000000000011000000000000
+0000000000000111000000000000
+0000000000000110000000000000
+0000000000000110000000000000
+0000000000001100000000000000
+0000000011111000000000000000
+0000000011111000000000000000
+0000000001100000000000000000
+0000000000000000000000000000
+
+============================================================
+MUESTRA 10002
+============================================================
+words crudas:
+word[ 0] = 0x00000200
+word[ 1] = 0x00000000
+word[ 2] = 0x00000000
+word[ 3] = 0x00000000
+word[ 4] = 0x00000000
+word[ 5] = 0x00000000
+word[ 6] = 0xf8000000
+word[ 7] = 0x1fe00000
+word[ 8] = 0x00e78000
+word[ 9] = 0x000e1c00
+word[10] = 0x0000e0e0
+word[11] = 0x30001f06
+word[12] = 0x830001f0
+word[13] = 0x8fe00019
+word[14] = 0x187c0001
+word[15] = 0x01800000
+word[16] = 0x00380000
+word[17] = 0x00030000
+word[18] = 0x00003000
+word[19] = 0x00000300
+word[20] = 0x00000030
+word[21] = 0x30000003
+word[22] = 0x01800000
+word[23] = 0x00180000
+word[24] = 0x00000000
+
+============================================================
+desempaquetado:
+============================================================
+label_onehot = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+decoded_label = 9
+onehot_valid = true
+padding = [000000]
+pixels ones_count = 89
+pixels preview [0..783] = 
+
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000000000000000000
+0000000000000111110000000000
+0000000000011111111000000000
+0000000001111001110000000000
+0000000011100001110000000000
+0000000111000001110000000000
+0000000110000011111000000000
+0000001100000011111000000000
+0000001100000110011000000000
+0000000111111100011000000000
+0000000011111000011000000000
+0000000000000000011000000000
+0000000000000000011100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000000000001100000000
+0000000000000000011000000000
+0000000000000000011000000000
+0000000000000000000000000000
+
+============================================================
+FIN DEL TESTBENCH
+============================================================
 INFO: [SIM 211-1] CSim done with 0 errors.
 INFO: [SIM 211-3] *************** CSIM finish ***************
-INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 1 seconds. Total elapsed time: 5.818 seconds; peak allocated memory: 265.008 MB.
-INFO: [vitis-run 60-791] Total elapsed time: 0h 0m 10s
+INFO: [HLS 200-112] Total CPU user time: 3 seconds. Total CPU system time: 2 seconds. Total elapsed time: 474.193 seconds; peak allocated memory: 264.578 MB.
+INFO: [vitis-run 60-791] Total elapsed time: 0h 8m 0s
