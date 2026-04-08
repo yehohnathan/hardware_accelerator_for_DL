@@ -1,382 +1,224 @@
-# =============================== Librerías ================================= #
-from pathlib import Path            # Manejo limpio de rutas de archivos
-import numpy as np                  # Cálculo numérico eficiente
+# ================================ LIBRERÍAS ================================ #
+from pathlib import Path
+# Importa NumPy para reconstruir y mostrar el contenido del binario.
+import numpy as np
 
-
-# =========================== Variables globales ============================ #
+# ============================ VARIABLES GLOBALES =========================== #
+# Define el tamaño lateral de la imagen MNIST.
 IMG_SIZE = 28
-# Tamaño lateral de la imagen MNIST: 28x28
-
+# Define la cantidad total de pixeles por muestra.
 NUM_PIXELS = IMG_SIZE * IMG_SIZE
-# Total de píxeles por imagen: 784
-
+# Define la cantidad de bits reservados para la etiqueta one-hot.
 NUM_CLASSES = 10
-# Número de clases en MNIST: dígitos del 0 al 9
-
-FF_INPUT_BITS = NUM_PIXELS + NUM_CLASSES
-# Entrada total para FF: 784 bits de imagen + 10 bits one-hot
-
+# Define el ancho de cada palabra del archivo binario.
 PACK_BITS = 32
-# Cantidad de bits por palabra de empaquetado
-
-PIX_PACK_WORDS = (NUM_PIXELS + PACK_BITS - 1) // PACK_BITS
-# Número de palabras de 32 bits necesarias para 784 bits
-
-FF_PACK_WORDS = (FF_INPUT_BITS + PACK_BITS - 1) // PACK_BITS
-# Número de palabras de 32 bits necesarias para 794 bits
 
 
-# =============================== Funciones ================================= #
+# ================================ FUNCIONES ================================ #
+def build_layout(pixel_bits: int) -> dict[str, int]:
+    """Construye el layout fisico del dataset para el modo solicitado."""
+    if pixel_bits not in (1, 4):
+        raise ValueError("pixel_bits debe ser 1 o 4.")
+
+    # Calcula el descriptor completo de una muestra empaquetada.
+    useful_bits = NUM_CLASSES + (NUM_PIXELS * pixel_bits)
+    words_per_sample = (useful_bits + PACK_BITS - 1) // PACK_BITS
+    total_bits = words_per_sample * PACK_BITS
+    padding_bits = total_bits - useful_bits
+    suffix = "1b" if pixel_bits == 1 else "4b"
+
+    return {
+        "pixel_bits": pixel_bits,
+        "useful_bits": useful_bits,
+        "words_per_sample": words_per_sample,
+        "total_bits": total_bits,
+        "padding_bits": padding_bits,
+        "suffix": suffix,
+    }
+
+
 def load_packed_ff_binary_dataset(
-    file_path: str,
+    file_path: str | Path,
     packed_words: int,
 ) -> np.ndarray:
     """
-    Lee un archivo binario FF con estructura:
-
+    Lee un archivo binario FF con esta estructura:
     [packed_words uint32][packed_words uint32]...
-
-    Es decir, cada muestra contiene únicamente las palabras del vector
-    FF empaquetado. No existe un byte adicional de label.
-
-    Args:
-        file_path: Ruta del archivo binario.
-        packed_words: Cantidad de palabras uint32 por muestra.
-
-    Returns:
-        packed_rows: Matriz empaquetada con forma (N, packed_words).
     """
-    file_path = Path(file_path)
-    # Convierte la ruta a objeto Path
+    # Normaliza la ruta del archivo a leer.
+    binary_path = Path(file_path)
 
-    raw_words = np.fromfile(file_path, dtype="<u4")
-    # Lee todo el archivo como palabras uint32 little-endian
+    # Carga el archivo como words uint32 little-endian.
+    raw_words = np.fromfile(binary_path, dtype="<u4")
 
     if raw_words.size == 0:
-        # Verifica si el archivo está vacío
-        raise ValueError("El archivo binario está vacío.")
+        raise ValueError("El archivo binario esta vacio.")
 
     if raw_words.size % packed_words != 0:
-        # Verifica que la cantidad total de words sea múltiplo exacto
         raise ValueError(
-            "El tamaño del archivo no es múltiplo de packed_words. "
+            "El tamano del archivo no es multiplo de packed_words. "
             "Revise el formato del binario."
         )
 
-    packed_rows = raw_words.reshape(-1, packed_words)
-    # Reorganiza el vector lineal en una matriz de N filas por packed_words
-
-    return packed_rows
-    # Devuelve la matriz empaquetada
+    # Reorganiza la lectura en filas, una por muestra.
+    return raw_words.reshape(-1, packed_words)
 
 
-def unpack_bits_matrix(
-    packed_matrix: np.ndarray,
-    total_bits: int,
-    pack_bits: int = 32,
-) -> np.ndarray:
-    """
-    Convierte datos empaquetados en su representación binaria original.
+def unpack_bits_row(packed_row: np.ndarray, total_bits: int) -> np.ndarray:
+    """Reconstruye una muestra bit a bit desde sus words empaquetadas."""
+    # Reserva el vector donde quedaran todos los bits fisicos.
+    bits = np.zeros(total_bits, dtype=np.uint8)
 
-    Args:
-        packed_matrix: Matriz (N, words) con uint32.
-        total_bits: Cantidad total de bits a reconstruir.
-        pack_bits: Bits por palabra.
+    for bit_idx in range(total_bits):
+        # Localiza la word y la posicion interna del bit actual.
+        word_idx = bit_idx // PACK_BITS
+        inner_bit = bit_idx % PACK_BITS
+        bits[bit_idx] = (packed_row[word_idx] >> inner_bit) & 1
 
-    Returns:
-        Matriz binaria (N, total_bits).
-    """
-    n_samples = packed_matrix.shape[0]
-    # Obtiene la cantidad de muestras del dataset
-
-    X_bits = np.zeros((n_samples, total_bits), dtype=np.uint8)
-    # Reserva la matriz de salida reconstruida
-
-    for n in range(n_samples):
-        # Recorre cada muestra
-
-        for i in range(total_bits):
-            # Recorre cada bit a reconstruir
-
-            word_idx = i // pack_bits
-            # Calcula en qué palabra se encuentra el bit
-
-            bit_idx = i % pack_bits
-            # Calcula la posición del bit dentro de la palabra
-
-            X_bits[n, i] = (packed_matrix[n, word_idx] >> bit_idx) & 1
-            # Extrae el bit y lo guarda en la matriz reconstruida
-
-    return X_bits
-    # Devuelve la matriz binaria completa
+    return bits
 
 
-def test_binary_dataset(
-    file_path: str,
-    packed_words: int,
-    total_bits: int,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Carga un dataset binario FF y reconstruye los vectores binarios.
+def decode_sample(
+    packed_row: np.ndarray,
+    pixel_bits: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Decodifica una muestra a etiqueta, pixeles y padding."""
+    # Recupera el layout para interpretar el bloque binario.
+    layout = build_layout(pixel_bits)
 
-    Args:
-        file_path: Ruta del archivo binario.
-        packed_words: Palabras por muestra.
-        total_bits: Bits lógicos por muestra.
+    # Reconstruye todos los bits fisicos de la muestra.
+    bits = unpack_bits_row(packed_row, layout["total_bits"])
 
-    Returns:
-        packed: Matriz empaquetada (N, packed_words).
-        X_reconstructed: Matriz reconstruida (N, total_bits).
-    """
-    packed = load_packed_ff_binary_dataset(
-        file_path=file_path,
-        packed_words=packed_words,
-    )
-    # Carga la matriz de palabras desde el archivo binario
+    # Separa los bits de la etiqueta one-hot.
+    label_bits = bits[0:NUM_CLASSES]
 
-    print("Dataset cargado")
-    # Informa que el archivo fue leído
+    # Reserva el vector donde quedaran los pixeles logicos.
+    pixel_values = np.zeros(NUM_PIXELS, dtype=np.uint8)
 
-    print("Muestras:", packed.shape[0])
-    # Imprime la cantidad total de muestras
+    # Recorre el bloque de pixeles respetando el ancho del modo activo.
+    pixel_cursor = NUM_CLASSES
+    for pixel_idx in range(NUM_PIXELS):
+        pixel_value = 0
 
-    print("Palabras por muestra:", packed.shape[1])
-    # Imprime la cantidad de palabras por muestra
+        for inner_bit in range(pixel_bits):
+            pixel_value |= int(bits[pixel_cursor + inner_bit]) << inner_bit
 
-    X_reconstructed = unpack_bits_matrix(
-        packed_matrix=packed,
-        total_bits=total_bits,
-        pack_bits=PACK_BITS,
-    )
-    # Reconstruye los bits lógicos desde las words empaquetadas
+        pixel_values[pixel_idx] = pixel_value
+        pixel_cursor += pixel_bits
 
-    print("Reconstrucción completada")
-    # Informa que terminó la reconstrucción
+    # Extrae el padding restante hasta cerrar la muestra completa.
+    padding_bits = bits[layout["useful_bits"]: layout["total_bits"]]
 
-    print("Dimensión reconstruida:", X_reconstructed.shape)
-    # Imprime la forma de la matriz reconstruida
-
-    return packed, X_reconstructed
-    # Devuelve tanto la matriz empaquetada como la reconstruida
+    return label_bits, pixel_values, padding_bits
 
 
-def print_full_sample(
+def print_dataset_summary(
     packed_data: np.ndarray,
-    sample_idx: int = 0,
+    pixel_bits: int,
+    file_path: str | Path,
 ) -> None:
-    """
-    Imprime todas las palabras binarias de una muestra.
+    """Imprime un resumen corto del archivo cargado."""
+    # Recupera el layout del modo activo para formar el resumen.
+    layout = build_layout(pixel_bits)
 
-    Args:
-        packed_data: Matriz (N, words) con uint32.
-        sample_idx: Índice de muestra a visualizar.
-    """
+    print("\n===== DATASET CARGADO =====")
+    print(f"file_path       : {Path(file_path)}")
+    print(f"input_mode      : {layout['suffix']}")
+    print(f"pixel_bits      : {pixel_bits}")
+    print(f"useful_bits     : {layout['useful_bits']}")
+    print(f"words_per_sample: {layout['words_per_sample']}")
+    print(f"padding_bits    : {layout['padding_bits']}")
+    print(f"samples         : {packed_data.shape[0]}")
+
+
+def print_sample_words(
+    packed_data: np.ndarray,
+    sample_idx: int,
+    num_words: int | None = None,
+) -> None:
+    """Imprime una muestra en decimal, hexadecimal y binario."""
+    # Selecciona la fila pedida y la recorta si hace falta.
     words = packed_data[sample_idx]
-    # Selecciona la muestra indicada
+    if num_words is not None:
+        words = words[:num_words]
 
     print(f"\n===== SAMPLE {sample_idx} =====")
-    # Imprime el encabezado de la muestra
 
+    # Muestra cada word en tres formatos para facilitar la inspeccion.
     for i, word in enumerate(words):
-        # Recorre cada palabra de la muestra
-
         print(
             f"word[{i:02d}]  "
-            f"dec:{word:<12}  "
-            f"hex:0x{word:08X}  "
-            f"bin:{word:032b}"
+            f"dec:{int(word):<12}  "
+            f"hex:0x{int(word):08X}  "
+            f"bin:{int(word):032b}"
         )
-        # Imprime la palabra en decimal, hexadecimal y binario
 
 
-def print_first_words(
+def print_digit_matrix(pixel_values: np.ndarray, pixel_bits: int) -> None:
+    """Imprime una imagen 28x28 directamente en terminal."""
+    for row_idx in range(IMG_SIZE):
+        # Extrae una fila logica de la imagen reconstruida.
+        row = pixel_values[row_idx * IMG_SIZE:(row_idx + 1) * IMG_SIZE]
+
+        if pixel_bits == 1:
+            print("".join(str(int(value)) for value in row))
+        else:
+            print(" ".join(f"{int(value):02d}" for value in row))
+
+
+def inspect_sample(
     packed_data: np.ndarray,
-    sample_idx: int = 0,
-    num_words: int = 25,
+    sample_idx: int,
+    pixel_bits: int,
+    show_words: bool = False,
 ) -> None:
-    """
-    Imprime las primeras palabras empaquetadas de una muestra.
-
-    Args:
-        packed_data: Matriz (N, words) con uint32.
-        sample_idx: Índice de muestra.
-        num_words: Cantidad de palabras a imprimir.
-    """
-    words = packed_data[sample_idx][:num_words]
-    # Selecciona las primeras num_words palabras de la muestra
-
-    print(f"\n===== FIRST {num_words} WORDS (sample {sample_idx}) =====")
-    # Imprime el encabezado de la sección
-
-    for i, word in enumerate(words):
-        # Recorre las palabras seleccionadas
-
-        print(
-            f"word[{i:02d}] = 0x{word:08X}"
+    """Imprime la informacion completa de una muestra."""
+    # Recupera el layout y, si se pide, muestra primero sus words.
+    layout = build_layout(pixel_bits)
+    if show_words:
+        print_sample_words(
+            packed_data=packed_data,
+            sample_idx=sample_idx,
+            num_words=layout["words_per_sample"],
         )
-        # Imprime cada palabra en hexadecimal
 
-
-def print_first_bits(
-    packed_data: np.ndarray,
-    sample_idx: int = 0,
-    num_bits: int = 800,
-    pack_bits: int = 32,
-) -> None:
-    """
-    Imprime los primeros bits reconstruidos desde el binario.
-
-    Args:
-        packed_data: Matriz (N, words) con uint32.
-        sample_idx: Índice de muestra.
-        num_bits: Cantidad de bits a mostrar.
-        pack_bits: Bits por palabra.
-    """
-    words = packed_data[sample_idx]
-    # Obtiene las palabras de la muestra seleccionada
-
-    bits = []
-    # Lista temporal donde se almacenan los bits reconstruidos
-
-    for i in range(num_bits):
-        # Recorre los bits solicitados
-
-        word_idx = i // pack_bits
-        # Calcula en qué palabra se encuentra el bit
-
-        bit_idx = i % pack_bits
-        # Calcula la posición del bit dentro de la palabra
-
-        bit = (words[word_idx] >> bit_idx) & 1
-        # Extrae el bit correspondiente
-
-        bits.append(str(bit))
-        # Convierte el bit a texto y lo agrega a la lista
-
-    print(f"\n===== FIRST {num_bits} BITS (sample {sample_idx}) =====")
-    # Imprime el encabezado de la sección
-
-    for i in range(0, num_bits, pack_bits):
-        # Recorre los bits por bloques de 32
-
-        chunk = bits[i:i + pack_bits]
-        # Extrae un bloque consecutivo de bits
-
-        print("".join(chunk))
-        # Imprime el bloque como una cadena continua
-
-
-def decode_first_sample_structure(
-    packed_data: np.ndarray,
-    sample_idx: int = 0,
-    num_words: int = 25,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """
-    Decodifica label, imagen y padding desde las primeras 25 palabras.
-
-    Estructura esperada del vector FF:
-        bits 0-9     : one-hot label
-        bits 10-793  : imagen binaria (784)
-        bits 794-799 : padding (6)
-
-    Args:
-        packed_data: Matriz (N, words) con uint32.
-        sample_idx: Índice de muestra a analizar.
-        num_words: Palabras a leer.
-
-    Returns:
-        label_bits: Vector de 10 bits.
-        image_bits: Vector de 784 bits.
-        padding_bits: Vector de 6 bits.
-    """
-    words = packed_data[sample_idx][:num_words]
-    # Selecciona las primeras palabras de la muestra
-
-    bits = []
-    # Lista temporal donde se reconstruirán los 800 bits
-
-    for word in words:
-        # Recorre cada palabra
-
-        for i in range(32):
-            # Recorre cada bit dentro de la palabra
-
-            bit = (word >> i) & 1
-            # Extrae el bit i usando convención LSB-first
-
-            bits.append(bit)
-            # Agrega el bit reconstruido a la lista
-
-    bits = np.array(bits, dtype=np.uint8)
-    # Convierte la lista final a vector NumPy
-
-    label_bits = bits[0:10]
-    # Extrae los 10 bits del one-hot
-
-    image_bits = bits[10:794]
-    # Extrae los 784 bits de imagen
-
-    padding_bits = bits[794:800]
-    # Extrae los 6 bits de padding
-
-    return label_bits, image_bits, padding_bits
-    # Devuelve las tres secciones separadas
-
-
-def inspect_sample_structure(
-    packed_data: np.ndarray,
-    sample_idx: int = 0,
-) -> None:
-    """
-    Imprime label, imagen y padding desde el binario.
-
-    Args:
-        packed_data: Matriz (N, words) con uint32.
-        sample_idx: Índice de la muestra a inspeccionar.
-    """
-    label_bits, image_bits, padding_bits = decode_first_sample_structure(
-        packed_data=packed_data,
-        sample_idx=sample_idx,
-        num_words=FF_PACK_WORDS,
+    # Decodifica la muestra y calcula su etiqueta legible.
+    label_bits, pixel_values, padding_bits = decode_sample(
+        packed_row=packed_data[sample_idx],
+        pixel_bits=pixel_bits,
     )
-    # Decodifica la estructura lógica de la muestra seleccionada
-
-    print("\n===== STRUCTURE INSPECTION =====")
-    # Imprime el encabezado de inspección
-
-    print("Label bits [0-9]:")
-    # Indica la sección de etiqueta
-
-    print(label_bits)
-    # Imprime el vector one-hot
-
-    print("\nImage bits [10-793]:")
-    # Indica la sección de imagen
-
-    for i in range(len(image_bits)):
-        # Recorre todos los bits de imagen
-
-        print(image_bits[i], end="")
-        # Imprime el bit sin salto de línea inmediato
-
-        if (i + 1) % 28 == 0:
-            # Cada 28 bits se termina una fila lógica de la imagen
-            print()
-
-    print("\nPadding bits [794-799]:")
-    # Indica la sección de padding
-
-    print(padding_bits)
-    # Imprime los 6 bits de padding
-
-    label_sum = int(np.sum(label_bits))
-    # Cuenta cuántos bits activos hay en el one-hot
-
-    print("\nOne-hot valid:", label_sum == 1)
-    # Informa si la etiqueta es one-hot válida
-
     decoded_label = int(np.argmax(label_bits))
-    # Decodifica la clase por posición del máximo
 
-    print("Decoded label:", decoded_label)
-    # Imprime la clase reconstruida
+    # Imprime un resumen de la muestra antes de dibujarla.
+    print(f"\n===== MUESTRA {sample_idx} =====")
+    print(f"input_mode      : {layout['suffix']}")
+    print(f"label_bits      : {label_bits}")
+    print(f"onehot_valid    : {int(np.sum(label_bits)) == 1}")
+    print(f"decoded_label   : {decoded_label}")
+    print(f"pixels_nonzero  : {int(np.count_nonzero(pixel_values))}")
+    print(f"pixels_sum      : {int(np.sum(pixel_values))}")
+    print(f"pixels_max      : {int(np.max(pixel_values))}")
+    print(f"padding_bits    : {padding_bits}")
+    print("digit_28x28     :")
+
+    # Dibuja la imagen reconstruida en formato 28x28.
+    print_digit_matrix(pixel_values, pixel_bits)
+
+
+def inspect_first_digits(
+    packed_data: np.ndarray,
+    pixel_bits: int,
+    num_digits: int = 2,
+    show_words: bool = False,
+) -> None:
+    """Imprime los primeros digitos del binario como matrices 28x28."""
+    # Ajusta la cantidad de muestras al tamaño real del archivo.
+    effective_digits = min(num_digits, packed_data.shape[0])
+
+    for sample_idx in range(effective_digits):
+        inspect_sample(
+            packed_data=packed_data,
+            sample_idx=sample_idx,
+            pixel_bits=pixel_bits,
+            show_words=show_words,
+        )
