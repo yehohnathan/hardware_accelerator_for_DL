@@ -1,59 +1,61 @@
-# Prerequisites
-*.d
+# ============================================================
+# ARCHIVOS DE COMPILACIÓN (C/C++ / GENERAL)
+# ============================================================
 
-# Compiled Object files
-*.slo
-*.lo
+# Dependencias y objetos
+*.d
 *.o
 *.obj
+*.slo
+*.lo
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
-# Linker files
+# Archivos de linker / debug
 *.ilk
-
-# Debugger Files
 *.pdb
+*.dwo
 
-# Compiled Dynamic libraries
+# Librerías dinámicas
 *.so
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
+# Librerías estáticas
 *.a
 *.lib
+*.la
+*.lai
 
-# Executables
+# Ejecutables
 *.exe
 *.out
 *.app
 
-# debug information files
-*.dwo
+# Módulos Fortran
+*.mod
+*.smod
 
-# ============================== Python ===============================
-# Byte-compiled / cache
+
+# ============================================================
+# PYTHON
+# ============================================================
+
+# Bytecode / cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environments
+# Entornos virtuales
 .venv/
 venv/
 env/
 .conda/
 .conda_env/
 
-# Packaging / builds
+# Builds / packaging
 build/
 dist/
 .eggs/
@@ -70,18 +72,63 @@ htmlcov/
 .nox/
 .hypothesis/
 
-# Type checkers / linters / caches
+# Linters / type checkers / cache
 .mypy_cache/
 .pytype/
 .pyre/
 .ruff_cache/
 .cache/
 
-# Jupyter
+# Jupyter notebooks
 .ipynb_checkpoints/
 
-# ============================== VS Code ==============================
-.vscode/
-_ide/
+
+# ============================================================
+# DATOS / BINARIOS GENERADOS
+# ============================================================
+
+# Archivos binarios generados (dataset empaquetado)
+*.bin
+
+# Archivos numpy (debug / dumps intermedios)
+*.npy
+
+# Bitstreams / archivos FPGA
+*.pdi
+
+
+# ============================================================
+# LOGS Y ARCHIVOS TEMPORALES
+# ============================================================
+
 logs/
+*.log
+
+# Archivos lock
+*.lock
+
+
+# ============================================================
+# VITIS / HLS / FPGA
+# ============================================================
+
+# Directorios de build y exportación
+build/
+export/
+
+# Workspace de Vitis
+.vitisWorkspace.json
+
+# Carpetas generadas por HLS / IDE
 hls/
+_ide/
+_ide/logs
+_ide/.wsdata
+
+
+# ============================================================
+# EDITORES / IDE
+# ============================================================
+
+# VS Code
+.vscode/
