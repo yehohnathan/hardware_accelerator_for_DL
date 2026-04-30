@@ -62,18 +62,34 @@ static goodness_t clip_nonlinear_margin(goodness_t value) {
 }
 
 static feature_t get_feature_value(ff_input_t ff_input, int input_idx) {
-    if (ff_input[input_idx] == 0) {
-        return (feature_t)0;
-        // Se retorna cero cuando el bit de entrada esta inactivo.
-    }
-
     if (input_idx < LABEL_BITS) {
+        if (ff_input[input_idx] == 0) {
+            return (feature_t)0;
+            // Se retorna cero cuando el bit de etiqueta esta inactivo.
+        }
+
         return LABEL_SCALE_HW;
         // Se aplica label_scale al segmento de etiqueta incrustada.
     }
 
-    return PIXEL_SCALE_HW;
-    // Se aplica escala unitaria al segmento de pixeles binarios.
+    int pixel_idx = input_idx - LABEL_BITS;
+    // Se convierte el indice logico de entrada al indice del pixel empaquetado.
+
+    ap_uint<8> raw_pixel_value =
+        get_packed_pixel_value_from_input(ff_input, pixel_idx);
+    // Se extrae el valor entero real del pixel desde la entrada empaquetada.
+
+    if (raw_pixel_value == 0) {
+        return (feature_t)0;
+        // Se retorna cero cuando el pixel cuantizado esta completamente apagado.
+    }
+
+    feature_t normalized_pixel =
+        (feature_t)raw_pixel_value * PIXEL_NORMALIZATION_HW;
+    // Se normaliza el pixel al rango [0, 1] para comparar 1b, 4b y 6b.
+
+    return (feature_t)(normalized_pixel * PIXEL_SCALE_HW);
+    // Se aplica la escala global de pixel sobre el valor ya normalizado.
 }
 
 static float exp_host_or_hls(float value) {
@@ -277,7 +293,7 @@ label_idx_t generate_negative_label(label_idx_t true_label, lfsr_t &state) {
 // ============================================================
 raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
     raw_sample_t sample = 0;
-    // Se inicializa el contenedor fisico de 800 bits.
+    // Se inicializa el contenedor fisico completo de la muestra actual.
 
     int base = sample_idx * WORDS_PER_SAMPLE;
     // Se calcula la posicion base de la muestra dentro del buffer lineal.
@@ -285,14 +301,14 @@ raw_sample_t load_sample_from_words(const word_t *mem, int sample_idx) {
 load_words_loop:
     for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
 #pragma HLS UNROLL
-        // Se desenrolla porque siempre se cargan exactamente 25 palabras.
+        // Se desenrolla porque el numero de words por muestra es fijo en la build.
 
         sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS) = mem[base + w];
         // Se copia cada palabra de 32 bits al rango correcto del vector ancho.
     }
 
     return sample;
-    // Se retorna la muestra reconstruida como un unico vector de 800 bits.
+    // Se retorna la muestra reconstruida como un unico vector fisico.
 }
 
 void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
@@ -302,7 +318,7 @@ void store_sample_to_words(word_t *mem, int sample_idx, raw_sample_t sample) {
 store_words_loop:
     for (int w = 0; w < WORDS_PER_SAMPLE; w++) {
 #pragma HLS UNROLL
-        // Se desenrolla porque siempre se almacenan exactamente 25 palabras.
+        // Se desenrolla porque el numero de words por muestra es fijo en la build.
 
         mem[base + w] = sample.range((w + 1) * WORD_BITS - 1, w * WORD_BITS);
         // Se extrae cada palabra de 32 bits del vector ancho y se almacena externamente.
@@ -354,7 +370,7 @@ ff_input_t build_ff_input(label_oh_t label_onehot, pixels_t pixels) {
     // Se coloca la imagen binaria a continuacion de la etiqueta.
 
     return ff_input;
-    // Se retorna la entrada logica final de 794 bits.
+    // Se retorna la entrada logica final con la resolucion activa.
 }
 
 void unpack_ff_input(ff_input_t ff_input, label_oh_t &label_onehot, pixels_t &pixels) {
@@ -442,7 +458,7 @@ layer1_lane_init_loop:
 layer1_input_forward_loop:
         for (int input_idx = 0; input_idx < MODEL_LAYER1_INPUT_BITS; input_idx++) {
 #pragma HLS PIPELINE II=1
-            // Se pipelinea el recorrido sobre las 794 entradas de la primera capa.
+            // Se pipelinea el recorrido sobre todas las entradas logicas de la capa 1.
 
             feature_t feature_value = get_feature_value(ff_input, input_idx);
             // Se reconstruye el valor numerico de la caracteristica actual.

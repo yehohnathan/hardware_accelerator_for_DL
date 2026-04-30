@@ -1,160 +1,202 @@
-#include "tb_stage_b.hpp"   // Se incluye el módulo de validación independiente de la Etapa B.
-#include "tb_stage_c.hpp"   // Se incluye el módulo de entrenamiento y evaluación de la Etapa C.
-#include "debug_utils.hpp"  // Se incluyen utilidades comunes para lectura del binario y separación visual.
+#include "tb_stage_b.hpp"
+#include "tb_stage_c.hpp"
+#include "debug_utils.hpp"
 
-#include <iostream>          // Se incluye iostream para mensajes de estado del testbench.
-#include <vector>            // Se incluye vector para almacenar el binario cargado en memoria.
-#include <string>            // Se incluye string para manejar rutas del archivo de entrada.
-#include <fstream>           // Se incluye fstream para verificar rutas candidatas del binario.
-#include <cstdlib>           // Se incluye cstdlib para leer overrides opcionales desde variables de entorno.
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
-// ============================================================
-// Utilidad simple para localizar el binario de entrada
-// ============================================================
+/**
+ * @brief Construye el nombre canonico del binario esperado por la build.
+ *
+ * @return Retorna el nombre de archivo asociado a la resolucion y al modo
+ * configurados en forward_fw.hpp.
+ */
+static std::string build_default_input_name() {
+    std::ostringstream oss;
+    // Se construye el nombre del binario a partir de la build HLS activa.
+
+    oss << "mnist_"
+        << IMAGE_WIDTH << "x" << IMAGE_HEIGHT
+        << "_" << INPUT_BITS_PER_PIXEL << "b_packed.bin";
+    // Se genera el nombre de archivo esperado por el dataset actual.
+
+    return oss.str();
+    // Se retorna el nombre canonico del binario esperado.
+}
+
+/**
+ * @brief Localiza el binario de entrada segun la build y el entorno.
+ *
+ * @return Retorna la ruta del binario que se intentara abrir.
+ *
+ * @note La variable de entorno FF_INPUT_BIN_PATH tiene prioridad absoluta.
+ * @note Si no se define un override, se intenta abrir el nombre canonico
+ * generado a partir de IMAGE_WIDTH, IMAGE_HEIGHT e INPUT_BITS_PER_PIXEL.
+ */
 static std::string resolve_input_path() {
-    const char *candidate_paths[] = {
-        "D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/mnist/data/processed/mnist_ff_input_packed.bin",
-        "data/processed/mnist_ff_input_packed.bin",
-        "/mnt/data/mnist_ff_input_packed.bin"
-    };
-    // Se define un conjunto pequeño de rutas candidatas para reutilizar el mismo testbench en distintos entornos.
+    const char *env_input_path = std::getenv("FF_INPUT_BIN_PATH");
+    // Se consulta primero un override explicito desde variables de entorno.
 
-resolve_path_loop:
-    for (int i = 0; i < 3; i++) {
-        std::ifstream file(candidate_paths[i], std::ios::binary);
-        // Se intenta abrir cada ruta candidata solo para verificar si existe realmente en el entorno actual.
+    if (env_input_path != 0) {
+        std::ifstream env_file(env_input_path, std::ios::binary);
+        // Se comprueba si la ruta dada por entorno realmente existe.
 
-        if (file.is_open()) {
-            file.close();
-            // Si la ruta existe, se cierra de inmediato porque aquí solo interesa validar disponibilidad.
-
-            return std::string(candidate_paths[i]);
-            // Se retorna la primera ruta válida encontrada.
+        if (env_file.is_open()) {
+            env_file.close();
+            return std::string(env_input_path);
+            // Se retorna el override cuando la ruta es valida.
         }
     }
 
-    return std::string(candidate_paths[0]);
-    // Si ninguna ruta existe, se retorna la ruta principal para que el error posterior sea explícito.
+    std::string input_name = build_default_input_name();
+    // Se construye el nombre canonico del binario esperado por la build actual.
+
+    const char *candidate_dirs[] = {
+        "D:/TFG/hardware_accelerator_for_DL/ff_bnn_stage/mnist/data/processed/",
+        "ff_bnn_stage/mnist/data/processed/",
+        "../mnist/data/processed/",
+        "data/processed/",
+    };
+    // Se definen varias rutas candidatas para reutilizar el testbench.
+
+    for (int i = 0; i < 4; i++) {
+        std::string candidate = std::string(candidate_dirs[i]) + input_name;
+        std::ifstream file(candidate.c_str(), std::ios::binary);
+        // Se intenta abrir cada ruta candidata para verificar si existe.
+
+        if (file.is_open()) {
+            file.close();
+            return candidate;
+            // Se retorna la primera ruta valida encontrada.
+        }
+    }
+
+    return std::string(candidate_dirs[0]) + input_name;
+    // Se retorna la ruta principal para que un fallo posterior sea explicito.
 }
 
-// ============================================================
-// Utilidades simples para overrides desde entorno
-// ============================================================
-static int read_env_int_or_default(const char *env_name, int default_value) {
+/**
+ * @brief Lee un override entero desde el entorno o usa el valor por defecto.
+ *
+ * @param env_name Indica el nombre de la variable de entorno consultada.
+ * @param default_value Indica el valor por defecto del experimento.
+ *
+ * @return Retorna el override leido o el valor por defecto si no es valido.
+ */
+static int read_env_int_or_default(
+    const char *env_name,
+    int default_value
+) {
     const char *env_value = std::getenv(env_name);
-    // Se consulta la variable de entorno solicitada para permitir barridos sin editar el testbench.
+    // Se consulta la variable de entorno solicitada por el experimento.
 
     if (env_value == 0) {
         return default_value;
-        // Si la variable no existe, se conserva el valor por defecto del experimento.
+        // Se conserva el valor por defecto si la variable no existe.
     }
 
     int parsed_value = std::atoi(env_value);
-    // Se convierte el texto a entero usando una rutina simple y portable para el testbench.
+    // Se convierte el texto de la variable a entero de forma simple.
 
     if (parsed_value <= 0) {
         return default_value;
-        // Si el override es invalido o no positivo, se conserva el valor por defecto.
+        // Se conserva el valor por defecto si el override es invalido.
     }
 
     return parsed_value;
     // Se retorna el override valido para el experimento actual.
 }
 
-// ============================================================
-// Función principal del testbench modular
-// ============================================================
+/**
+ * @brief Ejecuta el testbench modular completo del acelerador FF.
+ *
+ * @return Retorna 0 cuando la simulacion termina correctamente.
+ *
+ * @note Las variables de entorno FF_TRAIN_SAMPLES, FF_EVAL_SAMPLES y
+ * FF_EPOCHS permiten ajustar el experimento sin recompilar.
+ */
 int main() {
     std::string file_path = resolve_input_path();
-    // Se determina la ruta efectiva del binario de entrada según el entorno actual de simulación.
+    // Se determina la ruta efectiva del binario de entrada.
 
+    ff_binary_header_t dataset_header;
     std::vector<word_t> input_words;
-    // Se reserva el buffer lineal donde se almacenarán todas las words leídas del archivo binario.
+    // Se reservan la cabecera y el payload del binario cargado.
 
-    bool read_ok = read_binary_file_words(file_path, input_words);
-    // Se intenta leer el archivo completo usando la utilidad de depuración compartida.
+    bool read_ok = read_binary_dataset(file_path, dataset_header, input_words);
+    // Se intenta leer el archivo completo y separar cabecera y payload.
 
     if (!read_ok) {
         std::cerr << "ERROR: no fue posible leer el binario de entrada." << std::endl;
-        // Si la lectura falla, se reporta el problema y no se intenta seguir con el testbench.
-
         return 1;
-        // Se finaliza la ejecución con código de error.
+        // Se detiene el testbench si la lectura del binario falla.
     }
 
-    if (input_words.size() == 0) {
-        std::cerr << "ERROR: el archivo está vacío." << std::endl;
-        // Se verifica explícitamente que el binario no sea vacío antes de invocar cualquier módulo.
+    bool layout_ok = validate_binary_header_against_build(dataset_header);
+    // Se comprueba si la build HLS coincide con la metadata del binario.
 
+    if (!layout_ok) {
         return 1;
-        // Se finaliza la ejecución con código de error.
+        // Se detiene el testbench cuando el binario no coincide con la build.
     }
 
-    if ((input_words.size() % WORDS_PER_SAMPLE) != 0) {
-        std::cerr << "ERROR: la cantidad total de words no es múltiplo de " << WORDS_PER_SAMPLE << "." << std::endl;
-        // Se verifica que el archivo contenga un número entero de muestras completas con 25 words cada una.
-
+    if (input_words.empty()) {
+        std::cerr << "ERROR: el payload del archivo esta vacio." << std::endl;
         return 1;
-        // Se finaliza la ejecución con código de error.
+        // Se verifica que el payload no sea vacio antes de seguir.
     }
 
-    int total_samples = (int)(input_words.size() / WORDS_PER_SAMPLE);
-    // Se calcula cuántas muestras completas existen realmente en el archivo binario cargado.
+    int total_samples = (int)dataset_header.sample_count;
+    // Se recupera la cantidad de muestras desde la cabecera ya validada.
 
-    print_separator("INFORMACION GENERAL DEL BINARIO");
-    // Se abre la primera sección del testbench con información general del dataset congelado.
-
-    std::cout << "file_path      = " << file_path << std::endl;
-    // Se imprime la ruta efectiva usada para la lectura del binario.
-
-    std::cout << "total_words    = " << input_words.size() << std::endl;
-    // Se imprime la cantidad total de words de 32 bits leídas del archivo.
-
-    std::cout << "words/sample   = " << WORDS_PER_SAMPLE << std::endl;
-    // Se recuerda que cada muestra ocupa exactamente 25 words.
-
-    std::cout << "total_samples  = " << total_samples << std::endl;
-    // Se imprime la cantidad total de muestras detectadas en el binario.
+    print_binary_header_summary(file_path, dataset_header, input_words);
+    // Se imprime el resumen completo del archivo cargado.
 
     uint16_t seed = 0x1234;
-    // Se fija una semilla determinista para reproducir resultados entre simulaciones consecutivas.
+    // Se fija una semilla determinista para reproducir resultados.
 
-    bool stage_b_ok = run_stage_b_validation(input_words, total_samples, seed);
-    // Se ejecuta la validación modular de la Etapa B como un bloque independiente del entrenamiento FF.
+    bool stage_b_ok = run_stage_b_validation(
+        dataset_header,
+        input_words,
+        total_samples,
+        seed
+    );
+    // Se ejecuta la validacion modular de la Etapa B.
 
     print_separator("RESUMEN GLOBAL DE MODULOS");
-    // Se imprime una pequeña sección de estado global antes de pasar a la siguiente etapa.
+    // Se imprime una pequena seccion de estado global.
 
-    std::cout << "stage_b_ok     = " << (stage_b_ok ? "true" : "false") << std::endl;
-    // Se reporta el veredicto general retornado por el módulo de validación de la Etapa B.
+    std::cout << "stage_b_ok     = "
+              << (stage_b_ok ? "true" : "false") << std::endl;
+    // Se reporta el veredicto general retornado por la Etapa B.
 
     stage_c_experiment_cfg_t cfg;
-    // Se crea la estructura de configuración del experimento modular de la Etapa C.
+    // Se crea la estructura de configuracion de la Etapa C.
 
     cfg.train_samples_limit = read_env_int_or_default("FF_TRAIN_SAMPLES", 5000);
-    // Se fija un default de 1024 muestras porque fue suficiente para comparar configuraciones con menor ruido.
-
     cfg.eval_samples_limit = read_env_int_or_default("FF_EVAL_SAMPLES", 128);
-    // Se fija un hold-out de 128 muestras porque permite medir mejor la accuracy sin disparar demasiado el tiempo.
-
     cfg.epochs = read_env_int_or_default("FF_EPOCHS", 30);
-    // Se fijan 3 epocas por defecto para detectar rapidamente si el modelo ya se esta moviendo.
-
     cfg.inspect_new_samples = false;
-    // Se habilita la inspección visual de algunas muestras alejadas al final del experimento.
-
     cfg.inspect_start_sample = 50;
-    // Se fija el inicio del rango adicional a inspeccionar cuando el dataset sea suficientemente grande.
-
     cfg.inspect_num_samples = 5;
-    // Se define cuántas muestras consecutivas se imprimirán en esa inspección adicional.
+    // Se fija una configuracion host simple y reutilizable para el experimento.
 
-    run_stage_c_experiment(input_words, total_samples, seed, cfg);
-    // Se ejecuta el módulo independiente de la Etapa C encargado de entrenar, evaluar y resumir el modelo FF.
+    run_stage_c_experiment(
+        dataset_header,
+        input_words,
+        total_samples,
+        seed,
+        cfg
+    );
+    // Se ejecuta el experimento modular de la Etapa C.
 
     print_separator("FIN DEL TESTBENCH");
-    // Se imprime la sección final del testbench indicando que la ejecución modular completa terminó.
+    // Se imprime la seccion final del testbench.
 
     return 0;
-    // Se finaliza la simulación con código de éxito.
+    // Se finaliza la simulacion con codigo de exito.
 }

@@ -4,25 +4,72 @@
 #include <iomanip>          // Se incluye iomanip para alinear y formatear las salidas.
 #include <iostream>         // Se incluye iostream para imprimir durante la simulacion.
 #include <limits>           // Se incluye limits para resumir minimos y maximos del modelo.
+#include <sstream>          // Se incluye sstream para construir mensajes de modo y errores.
 #include <stdint.h>         // Se incluyen tipos estandar para la lectura de words crudas.
 
 // ============================================================
-// Lectura del archivo binario
+// Constantes host del nuevo formato binario
 // ============================================================
-bool read_binary_file_words(const std::string &file_path, std::vector<word_t> &buffer) {
+static const uint32_t HOST_HEADER_MAGIC = 0x4D4E4953u;
+// Se fija la palabra magica que identifica el binario generado por Python.
+
+static const uint32_t HOST_HEADER_VERSION = 1u;
+// Se fija la version de la cabecera esperada por el testbench host.
+
+static const uint32_t HOST_HEADER_WORDS = 16u;
+// Se fija la cantidad de words reservadas a la cabecera del binario.
+
+// ============================================================
+// Utilidades host para nombres de modo y lectura de cabecera
+// ============================================================
+static std::string build_mode_suffix(uint32_t pixel_bits) {
+    std::ostringstream oss;
+    // Se crea un stream local para construir el sufijo del modo.
+
+    oss << pixel_bits << "b";
+    // Se concatena la cantidad de bits seguida del sufijo convencional.
+
+    return oss.str();
+    // Se retorna el sufijo legible del modo de entrada.
+}
+
+static std::string build_mode_name(uint32_t pixel_bits) {
+    if (pixel_bits == 1u) {
+        return "binary_1bit";
+        // Se usa un nombre especifico cuando el modo es estrictamente binario.
+    }
+
+    std::ostringstream oss;
+    // Se crea un stream local para construir el nombre del modo cuantizado.
+
+    oss << "quantized_" << pixel_bits << "bit";
+    // Se concatena el numero de bits con un nombre legible para consola.
+
+    return oss.str();
+    // Se retorna el nombre legible del modo de entrada.
+}
+
+// ============================================================
+// Lectura del archivo binario con cabecera
+// ============================================================
+bool read_binary_dataset(
+    const std::string &file_path,
+    ff_binary_header_t &header,
+    std::vector<word_t> &payload_words
+) {
     std::ifstream file(file_path.c_str(), std::ios::binary);
-    // Se abre el archivo solicitado en modo binario.
+    // Se abre el archivo solicitado en modo binario para leer cabecera y payload.
 
     if (!file.is_open()) {
         std::cerr << "ERROR: no se pudo abrir el archivo: " << file_path << std::endl;
-        // Se reporta el problema si la ruta no pudo abrirse.
+        // Se reporta el problema si la ruta no pudo abrirse correctamente.
 
         return false;
-        // Se retorna false para detener el testbench.
+        // Se retorna false para detener el testbench cuanto antes.
     }
 
-    buffer.clear();
-    // Se limpia el vector por si ya tenia contenido previo.
+    std::vector<uint32_t> raw_words;
+    // Se reserva un vector temporal de words crudas leidas desde el archivo.
 
     while (true) {
         uint32_t temp_word = 0;
@@ -36,19 +83,170 @@ bool read_binary_file_words(const std::string &file_path, std::vector<word_t> &b
             // Se abandona el lazo al llegar al fin de archivo o ante error de lectura.
         }
 
-        buffer.push_back((word_t)temp_word);
-        // Se agrega la word leida al buffer lineal del dataset.
+        raw_words.push_back(temp_word);
+        // Se agrega la word leida al buffer lineal del archivo completo.
     }
 
     file.close();
     // Se cierra el archivo porque ya no se requiere mas acceso.
 
+    if (raw_words.size() < HOST_HEADER_WORDS) {
+        std::cerr << "ERROR: el binario no contiene la cabecera completa." << std::endl;
+        // Se comprueba que el archivo tenga al menos las 16 words de cabecera.
+
+        return false;
+        // Se detiene la lectura porque la cabecera esta incompleta.
+    }
+
+    header.magic = raw_words[0];
+    header.version = raw_words[1];
+    header.header_words = raw_words[2];
+    header.sample_count = raw_words[3];
+    header.image_width = raw_words[4];
+    header.image_height = raw_words[5];
+    header.source_width = raw_words[6];
+    header.source_height = raw_words[7];
+    header.pixel_bits = raw_words[8];
+    header.num_classes = raw_words[9];
+    header.label_bits = raw_words[10];
+    header.useful_bits = raw_words[11];
+    header.words_per_sample = raw_words[12];
+    header.total_bits = raw_words[13];
+    header.padding_bits = raw_words[14];
+    header.resize_applied = raw_words[15];
+    // Se reconstruyen los campos declarados por la cabecera del archivo.
+
+    if (header.magic != HOST_HEADER_MAGIC) {
+        std::cerr << "ERROR: la palabra magica del binario no coincide." << std::endl;
+        // Se verifica que la cabecera pertenezca al formato esperado.
+
+        return false;
+        // Se detiene la lectura porque el archivo no usa el formato vigente.
+    }
+
+    if (header.version != HOST_HEADER_VERSION) {
+        std::cerr << "ERROR: la version del binario no esta soportada." << std::endl;
+        // Se verifica que la version de la cabecera sea la que entiende el testbench.
+
+        return false;
+        // Se detiene la lectura para evitar interpretar mal el payload.
+    }
+
+    if (header.header_words != HOST_HEADER_WORDS) {
+        std::cerr << "ERROR: la cabecera declara un tamano invalido." << std::endl;
+        // Se verifica que el tamano de la cabecera coincida con el formato pactado.
+
+        return false;
+        // Se detiene la lectura porque el archivo seria ambiguo para el parser.
+    }
+
+    header.num_pixels = header.image_width * header.image_height;
+    // Se calcula la cantidad real de pixeles logicos de la resolucion almacenada.
+
+    header.payload_words = header.sample_count * header.words_per_sample;
+    // Se calcula cuantas words deberia contener el payload declarado.
+
+    header.suffix = build_mode_suffix(header.pixel_bits);
+    // Se construye el sufijo corto del modo para trazas y nombres.
+
+    header.mode_name = build_mode_name(header.pixel_bits);
+    // Se construye el nombre legible del modo almacenado.
+
+    std::size_t payload_start = (std::size_t)HOST_HEADER_WORDS;
+    // Se fija el offset donde comienza el payload real dentro del archivo.
+
+    std::size_t expected_total_words =
+        payload_start + (std::size_t)header.payload_words;
+    // Se calcula el tamano total esperado del archivo completo.
+
+    if (raw_words.size() != expected_total_words) {
+        std::cerr << "ERROR: el payload no coincide con la cabecera del binario." << std::endl;
+        // Se verifica que la cantidad de words del archivo coincida con la metadata.
+
+        return false;
+        // Se detiene la lectura porque el archivo quedaria truncado o sobredimensionado.
+    }
+
+    payload_words.assign(header.payload_words, 0);
+    // Se reserva exactamente el tamano del payload lineal que consumira el kernel.
+
+payload_copy_loop:
+    for (uint32_t word_idx = 0; word_idx < header.payload_words; word_idx++) {
+        payload_words[word_idx] = (word_t)raw_words[payload_start + word_idx];
+        // Se copia solo el payload y se descarta la cabecera para el flujo HLS.
+    }
+
     return true;
-    // Se retorna true para indicar una lectura correcta.
+    // Se retorna true para indicar una lectura correcta del binario nuevo.
 }
 
 // ============================================================
-// Extraccion de una muestra de 25 words
+// Validacion de la cabecera contra la build actual
+// ============================================================
+bool validate_binary_header_against_build(const ff_binary_header_t &header) {
+    bool matches =
+        (header.image_width == (uint32_t)IMAGE_WIDTH) &&
+        (header.image_height == (uint32_t)IMAGE_HEIGHT) &&
+        (header.pixel_bits == (uint32_t)INPUT_BITS_PER_PIXEL) &&
+        (header.words_per_sample == (uint32_t)WORDS_PER_SAMPLE) &&
+        (header.total_bits == (uint32_t)TOTAL_BITS) &&
+        (header.padding_bits == (uint32_t)PADDING_BITS) &&
+        (header.label_bits == (uint32_t)LABEL_BITS) &&
+        (header.num_classes == (uint32_t)NUM_CLASSES);
+    // Se compara la cabecera del archivo contra la configuracion compilada.
+
+    if (matches == false) {
+        std::cerr << "ERROR: la cabecera del binario no coincide con la build actual." << std::endl;
+        std::cerr << "       build resolution = "
+                  << IMAGE_WIDTH << "x" << IMAGE_HEIGHT << std::endl;
+        std::cerr << "       file resolution  = "
+                  << header.image_width << "x" << header.image_height << std::endl;
+        std::cerr << "       build pixel_bits = "
+                  << INPUT_BITS_PER_PIXEL << std::endl;
+        std::cerr << "       file pixel_bits  = "
+                  << header.pixel_bits << std::endl;
+        std::cerr << "       build words      = "
+                  << WORDS_PER_SAMPLE << std::endl;
+        std::cerr << "       file words       = "
+                  << header.words_per_sample << std::endl;
+        // Se imprimen las diferencias principales para facilitar el ajuste de macros.
+    }
+
+    return matches;
+    // Se retorna true solo cuando la build y el archivo comparten el mismo layout.
+}
+
+// ============================================================
+// Resumen host del archivo cargado
+// ============================================================
+void print_binary_header_summary(
+    const std::string &file_path,
+    const ff_binary_header_t &header,
+    const std::vector<word_t> &payload_words
+) {
+    print_separator("INFORMACION GENERAL DEL BINARIO");
+    // Se abre la seccion de resumen de cabecera y payload del archivo cargado.
+
+    std::cout << "file_path      = " << file_path << std::endl;
+    std::cout << "input_mode     = " << header.mode_name << std::endl;
+    std::cout << "bits_per_pixel = " << header.pixel_bits << std::endl;
+    std::cout << "image_width    = " << header.image_width << std::endl;
+    std::cout << "image_height   = " << header.image_height << std::endl;
+    std::cout << "logical_pixels = " << header.num_pixels << std::endl;
+    std::cout << "storage_bits   = " << header.useful_bits << std::endl;
+    std::cout << "words/sample   = " << header.words_per_sample << std::endl;
+    std::cout << "padding_bits   = " << header.padding_bits << std::endl;
+    std::cout << "sample_count   = " << header.sample_count << std::endl;
+    std::cout << "payload_words  = " << payload_words.size() << std::endl;
+    std::cout << "resize_applied = "
+              << (header.resize_applied ? "true" : "false") << std::endl;
+    std::cout << "source_size    = "
+              << header.source_width << "x" << header.source_height << std::endl;
+    // Se imprimen los campos clave de la cabecera ya validada.
+}
+
+// ============================================================
+// Extraccion de una muestra desde el payload lineal
 // ============================================================
 void extract_sample_words(const std::vector<word_t> &buffer, int sample_idx, word_t sample_words[WORDS_PER_SAMPLE]) {
     int base = sample_idx * WORDS_PER_SAMPLE;
@@ -57,7 +255,7 @@ void extract_sample_words(const std::vector<word_t> &buffer, int sample_idx, wor
 extract_sample_loop:
     for (int i = 0; i < WORDS_PER_SAMPLE; i++) {
         sample_words[i] = buffer[base + i];
-        // Se copian las 25 words consecutivas al arreglo local de inspeccion.
+        // Se copian las words consecutivas de la muestra al arreglo local.
     }
 }
 
@@ -122,36 +320,88 @@ print_padding_loop:
 // Resumen de pixeles
 // ============================================================
 void print_pixels_summary(pixels_t pixels, int preview_count) {
-    int ones_count = 0;
-    // Se reserva un contador para medir cuantos pixeles activos tiene la imagen.
+    if (preview_count < 0) {
+        preview_count = NUM_LOGICAL_PIXELS;
+        // Se usa toda la imagen cuando el usuario no fija un limite manual.
+    }
+
+    if (preview_count > NUM_LOGICAL_PIXELS) {
+        preview_count = NUM_LOGICAL_PIXELS;
+        // Se recorta la vista previa cuando supera la cantidad real de pixeles.
+    }
+
+    int active_pixels = 0;
+    // Se reserva un contador para medir cuantos pixeles tienen valor no nulo.
+
+    int pixel_sum = 0;
+    // Se reserva un acumulador para resumir la intensidad total de la imagen.
+
+    int pixel_max = 0;
+    // Se reserva el maximo observado entre todos los pixeles de la imagen.
 
 count_pixels_loop:
-    for (int i = 0; i < PIXEL_BITS; i++) {
-        if (pixels[i] == 1) {
-            ones_count++;
-            // Se incrementa el conteo cuando se detecta un pixel activo.
+    for (int i = 0; i < NUM_LOGICAL_PIXELS; i++) {
+        int pixel_value = (int)get_packed_pixel_value(pixels, i);
+        // Se recupera el valor entero del pixel actual desde el bloque empaquetado.
+
+        if (pixel_value > 0) {
+            active_pixels++;
+            // Se cuenta el pixel actual como activo cuando su valor no es cero.
+        }
+
+        pixel_sum += pixel_value;
+        // Se acumula la intensidad del pixel actual en el resumen global.
+
+        if (pixel_value > pixel_max) {
+            pixel_max = pixel_value;
+            // Se conserva el valor maximo observado en toda la imagen.
         }
     }
 
-    std::cout << "pixels ones_count = " << ones_count << std::endl;
-    // Se imprime la cantidad de bits activos de la imagen binaria.
+    std::cout << "input_mode        = "
+              << (ff_is_binary_input_mode()
+                      ? "binary_1bit"
+                      : ("quantized_" + std::to_string(INPUT_BITS_PER_PIXEL) + "bit"))
+              << std::endl;
+    std::cout << "bits_per_pixel    = " << INPUT_BITS_PER_PIXEL << std::endl;
+    std::cout << "image_resolution  = "
+              << IMAGE_WIDTH << "x" << IMAGE_HEIGHT << std::endl;
+    std::cout << "pixels_active     = " << active_pixels << std::endl;
+    std::cout << "pixels_sum        = " << pixel_sum << std::endl;
+    std::cout << "pixels_max        = " << pixel_max << std::endl;
+    std::cout << "pixels preview [0.." << (preview_count - 1) << "] =\n";
+    // Se imprime un resumen compatible con 1b, 4b y 6b.
 
-    std::cout << "pixels preview [0.." << (preview_count - 1) << "] = \n";
-    // Se anuncia el rango de bits que se mostrara a continuacion.
+    int value_width = 1;
+    // Se reserva el ancho minimo de impresion para los valores de pixel.
+
+    if (PIXEL_MAX_STORED_VALUE >= 10) {
+        value_width = 2;
+        // Se ajusta el ancho de impresion cuando el pixel necesita dos cifras.
+    }
 
 preview_pixels_loop:
     for (int i = 0; i < preview_count; i++) {
-        if (i % 28 == 0) {
+        if ((i % IMAGE_WIDTH) == 0) {
             std::cout << "\n";
-            // Se inserta un salto de linea cada 28 bits para recordar la geometria 28x28.
+            // Se inserta un salto de linea al comienzo de cada fila logica.
         }
 
-        std::cout << (unsigned int)pixels[i];
-        // Se imprime el bit actual de la vista previa.
+        int pixel_value = (int)get_packed_pixel_value(pixels, i);
+        // Se recupera el valor entero del pixel actual para la vista previa.
+
+        if (INPUT_BITS_PER_PIXEL == 1) {
+            std::cout << pixel_value;
+            // Se imprime sin separador cuando el modo es estrictamente binario.
+        } else {
+            std::cout << std::setw(value_width) << std::setfill('0')
+                      << pixel_value << " ";
+            // Se imprime con ancho fijo cuando el modo es cuantizado.
+        }
     }
 
-    std::cout << std::endl;
-    // Se finaliza la salida de la vista previa.
+    std::cout << std::setfill(' ') << std::endl;
+    // Se restablece el relleno de stream y se finaliza la salida.
 }
 
 // ============================================================
@@ -162,7 +412,7 @@ void print_unpacked_sample(raw_sample_t sample, const std::string &title) {
     // Se reserva el contenedor local para la etiqueta de la muestra.
 
     pixels_t pixels;
-    // Se reserva el contenedor local para la imagen binaria.
+    // Se reserva el contenedor local para la imagen empaquetada.
 
     padding_t padding;
     // Se reserva el contenedor local para el padding fisico.
@@ -185,8 +435,8 @@ void print_unpacked_sample(raw_sample_t sample, const std::string &title) {
     print_padding_bits(padding);
     // Se imprime el padding fisico de la muestra.
 
-    print_pixels_summary(pixels, 784);
-    // Se imprime un resumen completo de la imagen binaria.
+    print_pixels_summary(pixels, NUM_LOGICAL_PIXELS);
+    // Se imprime un resumen completo de la imagen con la resolucion activa.
 }
 
 // ============================================================
@@ -252,7 +502,7 @@ bool same_padding(raw_sample_t a, raw_sample_t b) {
 
 bool same_raw_sample(raw_sample_t a, raw_sample_t b) {
     return (a == b);
-    // Se compara directamente la igualdad de los 800 bits fisicos.
+    // Se compara directamente la igualdad de todos los bits fisicos.
 }
 
 // ============================================================
@@ -331,16 +581,16 @@ print_range_loop:
         // Se abre una subseccion propia para la muestra actual.
 
         word_t sample_words[WORDS_PER_SAMPLE];
-        // Se reserva el arreglo temporal de las 25 words crudas.
+        // Se reserva el arreglo temporal de las words crudas de la muestra.
 
         extract_sample_words(buffer, sample_idx, sample_words);
-        // Se extraen las 25 words de la muestra actual.
+        // Se extraen las words correspondientes a la muestra actual.
 
         print_sample_words(sample_words, "words crudas:");
         // Se imprimen las words crudas de la muestra actual.
 
         raw_sample_t sample = load_sample_from_words(buffer.data(), sample_idx);
-        // Se reconstruye la muestra fisica completa de 800 bits.
+        // Se reconstruye la muestra fisica completa segun la build actual.
 
         print_unpacked_sample(sample, "desempaquetado:");
         // Se imprime la muestra interpretada como label, pixeles y padding.
