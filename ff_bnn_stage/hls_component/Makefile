@@ -23,6 +23,10 @@ PIX_BITS ?= 6
 TRAIN_SAMPLES ?= 128
 EVAL_SAMPLES ?= 32
 EPOCHS ?= 2
+GROUPS ?= smoke debug comparacion barrido_final
+EXPERIMENT_OUTPUT_DIR ?= $(THIS_DIR)/experiment_results
+EXPERIMENT_ARGS ?=
+PYTHON ?= py -3
 
 # Este nombre sigue el convenio que ya usa el empaquetado Python.
 BIN_NAME ?= mnist_$(IMG_W)x$(IMG_H)_$(PIX_BITS)b_packed.bin
@@ -79,6 +83,8 @@ HOST_CXXFLAGS := \
 	$(HOST_INCLUDES)
 
 .PHONY: all help print-config host run csim csim-run clean clean-csim
+.PHONY: experiments experiments-smoke experiments-debug
+.PHONY: experiments-comparacion experiments-barrido-final
 
 # La build host se deja como objetivo por defecto para tener una via rapida
 # de compilacion fuera del flujo completo de HLS.
@@ -92,16 +98,20 @@ help:
 	@echo   make run
 	@echo   make csim
 	@echo   make csim-run
+	@echo   make experiments GROUPS=smoke
+	@echo   make experiments-smoke
 	@echo   make clean
 	@echo.
 	@echo Variables configurables:
 	@echo   IMG_W=20 IMG_H=20 PIX_BITS=6
 	@echo   TRAIN_SAMPLES=128 EVAL_SAMPLES=32 EPOCHS=2
+	@echo   GROUPS=smoke debug comparacion barrido_final
 	@echo   BIN_PATH=$(REPO_ROOT)/ff_bnn_stage/mnist/data/processed/...
 	@echo.
 	@echo Ejemplos:
 	@echo   make run IMG_W=16 IMG_H=16 PIX_BITS=4
 	@echo   make csim-run IMG_W=28 IMG_H=28 PIX_BITS=1 EPOCHS=1
+	@echo   make experiments GROUPS="smoke debug"
 
 # Este target imprime la configuracion efectiva antes de compilar o ejecutar.
 print-config:
@@ -116,6 +126,8 @@ print-config:
 	@echo TRAIN_SAMPLES  = $(TRAIN_SAMPLES)
 	@echo EVAL_SAMPLES   = $(EVAL_SAMPLES)
 	@echo EPOCHS         = $(EPOCHS)
+	@echo EXPERIMENTS    = $(GROUPS)
+	@echo EXPERIMENT_OUT = $(EXPERIMENT_OUTPUT_DIR)
 	@echo HOST_EXE       = $(HOST_EXE)
 	@echo CSIM_EXE       = $(CSIM_EXE)
 
@@ -171,6 +183,39 @@ csim-run: csim
 	set "FF_EPOCHS=$(EPOCHS)" && \
 	cd /d "$(CSIM_DIR)" && \
 	sim.bat
+
+# Este target ejecuta el script Python de experimentos. Los grupos se
+# seleccionan con EXPERIMENT_GROUPS desde la terminal.
+experiments:
+	@$(PYTHON) "$(THIS_DIR)/run_experiments.py" \
+	--groups $(GROUPS) \
+	--output-dir "$(EXPERIMENT_OUTPUT_DIR)" \
+	$(EXPERIMENT_ARGS)
+
+# Estos aliases facilitan lanzar un unico grupo sin recordar argumentos.
+experiments-smoke:
+	@$(PYTHON) "$(THIS_DIR)/run_experiments.py" \
+	--groups smoke \
+	--output-dir "$(EXPERIMENT_OUTPUT_DIR)" \
+	$(EXPERIMENT_ARGS)
+
+experiments-debug:
+	@$(PYTHON) "$(THIS_DIR)/run_experiments.py" \
+	--groups debug \
+	--output-dir "$(EXPERIMENT_OUTPUT_DIR)" \
+	$(EXPERIMENT_ARGS)
+
+experiments-comparacion:
+	@$(PYTHON) "$(THIS_DIR)/run_experiments.py" \
+	--groups comparacion \
+	--output-dir "$(EXPERIMENT_OUTPUT_DIR)" \
+	$(EXPERIMENT_ARGS)
+
+experiments-barrido-final:
+	@$(PYTHON) "$(THIS_DIR)/run_experiments.py" \
+	--groups barrido_final \
+	--output-dir "$(EXPERIMENT_OUTPUT_DIR)" \
+	$(EXPERIMENT_ARGS)
 
 # Este target limpia solo los binarios host creados por este Makefile.
 clean:
