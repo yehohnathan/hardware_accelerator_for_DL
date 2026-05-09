@@ -132,3 +132,5 @@ _ide/.wsdata
 
 # VS Code
 .vscode/
+.codex/
+secrets/
