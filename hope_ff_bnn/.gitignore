@@ -1,0 +1,6 @@
+.Xil/
+build/
+hls_work/
+results/
+runs/
+*.exe
